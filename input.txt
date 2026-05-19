@@ -1,7 +1,10 @@
+#the following is a test
 int x -> 57;
 bool b -> false;
 string s -> "Hello World";
 
 b -> true;
 int c -> 8;
-x -> c;
+
+int d -> 4 + 5 * 6;
+d -> c + d;

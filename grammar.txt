@@ -1,16 +1,28 @@
 <prog> -> 
-    | <stmt> <prog>
+    | <stmt> ";" <prog>
     | ""
 <stmt> ->
     #variable declaration/assignment
-    | <ptype> <ident> "->" <exp> ";"
-    | <ident> "->" <exp> ";"
+    | <ptype> <ident> "->" <exp>
+    | <ident> "->" <exp>
 <exp> ->
+    | <bop>
+<bop> ->
+    | <term> <bop'>
+<bop'> ->
+    | "+" <term> <bop'>
+    | "-" <term> <bop'>
+    | ""
+<term> ->
+    | <factor> <term'>
+<term'> ->
+    | "*" -> <factor> <term'>
+    | "/" -> <factor> <term'>
+    | ""
+<factor> ->
+    | "(" <bop> ")"
     | <ident>
     | int | string | bool
-
-
-
 
 
 <ptype> -> "int" | "string" | "bool"

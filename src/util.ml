@@ -14,9 +14,24 @@ let print_map m =
     | Bool b -> Printf.printf "%s -> %b\n" key b
   ) m
 
-type exp = 
+let val_to_int (v: value_t) : int = 
+  match v with 
+  | Int n -> n
+  | _ -> failwith "Invalid input to val_to_int"
+let val_to_string (v: value_t) : string = 
+  match v with 
+  | String s -> s
+  | _ -> failwith "Invalid input to val_to_string"
+let val_to_bool (v: value_t) : bool = 
+  match v with 
+  | Bool b -> b
+  | _ -> failwith "Invalid input to val_to_bool"
+
+type bop = Add | Sub | Mul | Div
+and exp = 
   | VarExp of string
   | ValExp of value_t
+  | BopExp of exp * bop * exp
 type stmt = 
   | DecStmt of string * exp
   | AssignStmt of string * exp

@@ -1,10 +1,16 @@
 (*Evaluator*)
 open Util
 
-let eval_exp (env: environment_t) (exp: Util.exp) : Util.value_t = 
+let rec eval_exp (env: environment_t) (exp: Util.exp) : Util.value_t = 
   match exp with 
   | ValExp v -> v
   | VarExp v -> StringMap.find v env
+  | BopExp (e1, bop, e2) ->
+    (match bop with 
+    | Add -> Int(val_to_int(eval_exp env e1) + val_to_int(eval_exp env e2))
+    | Sub -> Int(val_to_int(eval_exp env e1) - val_to_int(eval_exp env e2))
+    | Mul -> Int(val_to_int(eval_exp env e1) * val_to_int(eval_exp env e2))
+    | Div -> Int(val_to_int(eval_exp env e1) / val_to_int(eval_exp env e2)))
 
 let eval_stmt (env: environment_t) (stmt: Util.stmt) : environment_t =
   match stmt with 

@@ -24,11 +24,12 @@ let lex_file (f: in_channel) : (string list) =
     while true do
       let next_char = input_char f in
       match next_char with 
+      | '#' -> while let c = input_char f in c != '\t' && c != '\r' do () done
       | '\"' -> 
         tokens := "\""::!tokens; 
         tokens := (lex_string f)::!tokens;
         tokens := "\""::!tokens
-      | ';' -> tokens := ";"::!tokens
+      | ';' | '+' | '*' | '/' | '(' | ')' -> tokens := (String.make 1 next_char)::!tokens
       | '-' -> 
         (match input_char f with 
         | '>' -> tokens := "->"::!tokens
