@@ -1,0 +1,17 @@
+<prog> -> 
+    | <stmt> <prog>
+    | ""
+<stmt> ->
+    #variable declaration/assignment
+    | <ptype> <ident> "->" <exp> ";"
+    | <ident> "->" <exp> ";"
+<exp> ->
+    | <ident>
+    | int | string | bool
+
+
+
+
+
+<ptype> -> "int" | "string" | "bool"
+<ident> -> alphanumeric characters
