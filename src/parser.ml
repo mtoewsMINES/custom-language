@@ -10,11 +10,11 @@ let rec parse_prog_helper (tok: string list) (stmt_list: stmt list) : Util.stmt 
 and parse_stmt (tok: string list) : (Util.stmt * string list) =
   match tok with 
   | "int"::i::"->"::d ->
-    let (exp, remtok) = parse_exp d in (DecStmt(i, exp), remtok)
+    let (exp, remtok) = parse_exp d in (DecStmt(IntType, i, exp), remtok)
   | "string"::i::"->"::d ->
-    let (exp, remtok) = parse_exp d in (DecStmt(i, exp), remtok)
+    let (exp, remtok) = parse_exp d in (DecStmt(StringType, i, exp), remtok)
   | "bool"::i::"->"::d -> 
-    let (exp, remtok) = parse_exp d in (DecStmt(i, exp), remtok)
+    let (exp, remtok) = parse_exp d in (DecStmt(BoolType, i, exp), remtok)
   | i::"->"::d ->
     let (exp, remtok) = parse_exp d in (AssignStmt(i, exp), remtok)
   | _ -> failwith "Invalid Statement"
@@ -31,6 +31,9 @@ and parse_bop_prime (exp: Util.exp) (tok: string list) : (Util.exp * string list
   | "-"::d ->
     let (t, remtok) = parse_term d in
     parse_bop_prime (BopExp(exp, Sub, t)) remtok
+  | "||"::d ->
+    let (t, remtok) = parse_term d in 
+    parse_bop_prime (BopExp(exp, Or, t)) remtok
   | _ -> (exp, tok)   
 and parse_term (tok: string list) : (Util.exp * string list) = 
   let (f, remtok) = parse_factor tok in
@@ -43,6 +46,9 @@ and parse_term_prime(exp: Util.exp)(tok: string list) : (exp * string list) =
   | "/"::d -> 
     let (f, remtok) = parse_factor d in
     parse_term_prime (BopExp(exp, Div, f)) remtok
+  | "&&"::d ->
+    let (t, remtok) = parse_term d in 
+    parse_bop_prime (BopExp(exp, And, t)) remtok
   | _ -> (exp, tok)
 and parse_factor (tok: string list) : (Util.exp * string list) = 
   match tok with 

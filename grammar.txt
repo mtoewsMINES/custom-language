@@ -12,12 +12,14 @@
 <bop'> ->
     | "+" <term> <bop'>
     | "-" <term> <bop'>
+    | "||" <term> <bop'>
     | ""
 <term> ->
     | <factor> <term'>
 <term'> ->
     | "*" -> <factor> <term'>
     | "/" -> <factor> <term'>
+    | "&&" -> <factor> <term'>
     | ""
 <factor> ->
     | "(" <bop> ")"

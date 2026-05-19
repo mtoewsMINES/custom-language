@@ -6,5 +6,4 @@ string s -> "Hello World";
 b -> true;
 int c -> 8;
 
-int d -> 4 + 5 * 6;
-d -> c + d;
+

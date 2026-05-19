@@ -27,13 +27,14 @@ let val_to_bool (v: value_t) : bool =
   | Bool b -> b
   | _ -> failwith "Invalid input to val_to_bool"
 
-type bop = Add | Sub | Mul | Div
+type bop = Add | Sub | Mul | Div | And | Or
 and exp = 
   | VarExp of string
   | ValExp of value_t
   | BopExp of exp * bop * exp
+type ptype = IntType | StringType | BoolType
 type stmt = 
-  | DecStmt of string * exp
+  | DecStmt of ptype * string * exp
   | AssignStmt of string * exp
 
 
