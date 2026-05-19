@@ -1,10 +1,12 @@
 <prog> -> 
-    | <stmt> ";" <prog>
+    | <stmt> <prog>
+    | "{" <prog> "}"
     | ""
 <stmt> ->
     #variable declaration/assignment
-    | <ptype> <ident> "->" <exp>
-    | <ident> "->" <exp>
+    | <ptype> <ident> "->" <exp> ";"
+    | <ident> "->" <exp> ";"
+    | "if" <exp> <prog> "else" <prog>
 <exp> ->
     | <bop>
 <bop> ->
@@ -22,9 +24,12 @@
     | "&&" -> <factor> <term'>
     | ""
 <factor> ->
-    | "(" <bop> ")"
+    | "(" <exp> ")"
     | <ident>
     | int | string | bool
+    | <uop>
+<uop> ->
+    | "!" <exp>
 
 
 <ptype> -> "int" | "string" | "bool"

@@ -6,4 +6,10 @@ string s -> "Hello World";
 b -> true;
 int c -> 8;
 
+bool d -> !(true && false);
 
+if false {
+    int c -> 9;
+} else {
+    int c -> 10;
+};

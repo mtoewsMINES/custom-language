@@ -57,7 +57,8 @@ let lex_file (f: in_channel) : (string list) =
           match e with 
           | End_of_file -> failwith ("Expected '&', got EOF")
           | _ -> raise e)
-      | ';' | '+' | '*' | '/' | '(' | ')' -> tokens := (String.make 1 next_char)::!tokens
+      | ';' | '+' | '*' | '/' | '(' | ')' | '!'
+      | '{' | '}' -> tokens := (String.make 1 next_char)::!tokens
       | '-' -> 
         (match input_char f with 
         | '>' -> tokens := "->"::!tokens

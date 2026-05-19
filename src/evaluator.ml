@@ -13,8 +13,11 @@ let rec eval_exp (env: environment_t) (exp: Util.exp) : Util.value_t =
     | Div -> Int(val_to_int(eval_exp env e1) / val_to_int(eval_exp env e2))
     | And -> Bool(val_to_bool(eval_exp env e1) && val_to_bool(eval_exp env e2))
     | Or -> Bool(val_to_bool(eval_exp env e1) || val_to_bool(eval_exp env e2)))
+  | UopExp (uop, e) ->
+    (match uop with 
+    | Not -> Bool(not (val_to_bool (eval_exp env e))))
 
-let eval_stmt (env: environment_t) (stmt: Util.stmt) : environment_t =
+let rec eval_stmt (env: environment_t) (stmt: Util.stmt) : environment_t =
   match stmt with 
   | DecStmt(t,i,e) -> 
     (match t with 
@@ -32,8 +35,12 @@ let eval_stmt (env: environment_t) (stmt: Util.stmt) : environment_t =
                 | String _ -> StringMap.add i (String s) env | _ -> failwith ("TypeError: Cannot assign string to " ^ i))
     | Bool b -> (match StringMap.find i env with 
                 | Bool _ -> StringMap.add i (Bool b) env | _ -> failwith ("TypeError: Cannot assign bool to " ^ i)))
+    | IfStmt (cond, p1, p2) ->
+      let env_copy = env in
+      ignore (if (val_to_bool(eval_exp env cond)) then eval_prog env_copy p1 else eval_prog env_copy p2);
+      env
 
-let rec eval_prog (env: environment_t) (stmts: Util.stmt list) : environment_t =
+and eval_prog (env: environment_t) (stmts: Util.stmt list) : environment_t =
   match stmts with 
   | [] -> env
   | stmt::d -> 
