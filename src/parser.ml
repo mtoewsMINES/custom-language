@@ -81,6 +81,9 @@ and parse_term_prime(exp: Util.exp)(tok: string list) : (exp * string list) =
   | "&&"::d ->
     let (t, remtok) = parse_term d in 
     parse_bop_prime (BopExp(exp, And, t)) remtok
+  | "="::d -> 
+    let (t, remtok) = parse_term d in 
+    parse_bop_prime (BopExp(exp, Equal, t)) remtok
   | _ -> (exp, tok)
 and parse_factor (tok: string list) : (Util.exp * string list) = 
   match tok with 

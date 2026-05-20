@@ -1,4 +1,8 @@
 Features:
--strings
+-comparisons
 -function definition and call
 -loops
+
+strings
+-append
+-indexing

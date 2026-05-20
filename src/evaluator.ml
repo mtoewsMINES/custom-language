@@ -24,7 +24,13 @@ let rec eval_exp (env: environment_t) (exp: Util.exp) : Util.value_t =
     | Mul -> Int(val_to_int(eval_exp env e1) * val_to_int(eval_exp env e2))
     | Div -> Int(val_to_int(eval_exp env e1) / val_to_int(eval_exp env e2))
     | And -> Bool(val_to_bool(eval_exp env e1) && val_to_bool(eval_exp env e2))
-    | Or -> Bool(val_to_bool(eval_exp env e1) || val_to_bool(eval_exp env e2)))
+    | Or -> Bool(val_to_bool(eval_exp env e1) || val_to_bool(eval_exp env e2))
+    | Equal -> 
+      (match eval_exp env e1, eval_exp env e2 with 
+      | (Int n1, Int n2) -> Bool(n1 = n2)
+      | (String s1, String s2) -> Bool(s1 = s2)
+      | (Bool b1, Bool b2) -> Bool(b1 = b2)
+      | _ -> failwith "Invalid comparison"))
   | UopExp (uop, e) ->
     (match uop with 
     | Not -> Bool(not (val_to_bool (eval_exp env e))))

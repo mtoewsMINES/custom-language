@@ -1,7 +1,7 @@
 (*Util*)
 module StringMap = Map.Make(String)
 
-type bop = Add | Sub | Mul | Div | And | Or
+type bop = Add | Sub | Mul | Div | And | Or | Equal
 type uop = Not
 type ptype = IntType | StringType | BoolType
 type type_t = 
