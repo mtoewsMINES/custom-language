@@ -4,7 +4,7 @@ let rec lex_alphanumeric (f: in_channel) : string =
   try
     let next_char = input_char f in
     match next_char with 
-    | 'a'..'z' | 'A'..'Z' -> (String.make 1 next_char) ^ (lex_alphanumeric f)
+    | 'a'..'z' | 'A'..'Z' | '0'..'9' | '_' -> (String.make 1 next_char) ^ (lex_alphanumeric f)
     | _ -> In_channel.seek f (Int64.sub (In_channel.pos f) 1L); "" (*skip back a position and exit*)
   with e ->
     match e with 

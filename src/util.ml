@@ -38,6 +38,10 @@ let val_to_bool (v: value_t) : bool =
   match v with 
   | Bool b -> b
   | _ -> failwith "Invalid input to val_to_bool"
+let val_to_list (v: value_t) : exp list =
+  match v with
+  | List l -> l
+  | _ -> failwith "Invalid input to val_to_list"
 
 (*Helper functions*)
 let to_string (e: exp) : string = 

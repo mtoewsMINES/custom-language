@@ -6,6 +6,5 @@ Features:
 -stdout
 
 lists
--indexing
 -append (element and list)
 -reverse

@@ -15,7 +15,11 @@ let rec eval_exp (env: environment_t) (exp: Util.exp) : Util.value_t =
   | VarExp v -> StringMap.find v env
   | BopExp (e1, bop, e2) ->
     (match bop with 
-    | Add -> Int(val_to_int(eval_exp env e1) + val_to_int(eval_exp env e2))
+    | Add -> 
+      (match eval_exp env e1, eval_exp env e2 with 
+      | (Int n1, Int n2) -> Int(n1 + n2)
+      | (List l1, List l2) -> List(l1 @ l2)
+      | _ -> failwith "Proper usage of '+': int + int | list + list")
     | Sub -> Int(val_to_int(eval_exp env e1) - val_to_int(eval_exp env e2))
     | Mul -> Int(val_to_int(eval_exp env e1) * val_to_int(eval_exp env e2))
     | Div -> Int(val_to_int(eval_exp env e1) / val_to_int(eval_exp env e2))
