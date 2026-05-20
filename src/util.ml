@@ -19,6 +19,7 @@ and exp =
   | ValExp of value_t
   | BopExp of exp * bop * exp
   | UopExp of uop * exp
+  | IndexExp of string * exp
 and value_t = 
   | Int of int
   | String of string

@@ -1,6 +1,14 @@
 (*Evaluator*)
 open Util
 
+let eval_index (env: environment_t) (list: value_t) (index: value_t) : value_t = 
+  match list, index with 
+  | (List l, Int n) -> 
+    (match List.nth l n with 
+    | ValExp v -> v
+    | _ -> failwith ("Non value at index" ^ (string_of_int n)))
+  | _ -> failwith "Cannot eval index"
+
 let rec eval_exp (env: environment_t) (exp: Util.exp) : Util.value_t = 
   match exp with 
   | ValExp v -> v
@@ -16,6 +24,7 @@ let rec eval_exp (env: environment_t) (exp: Util.exp) : Util.value_t =
   | UopExp (uop, e) ->
     (match uop with 
     | Not -> Bool(not (val_to_bool (eval_exp env e))))
+  | IndexExp (i, index) -> eval_index env (StringMap.find i env) (eval_exp env index)
 
 let rec eval_list (env: environment_t) (list: exp list) (t: string) : value_t = 
   match list with 

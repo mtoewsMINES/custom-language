@@ -86,6 +86,11 @@ and parse_factor (tok: string list) : (Util.exp * string list) =
     match remtok with 
     | "]"::d -> (ValExp (List ast), d)
     | _ -> failwith "Expected ']'")
+  | i::"["::d ->
+    (let (index, remtok) = parse_literal d in
+    match remtok with 
+    | "]"::d -> (IndexExp(i, index), d)
+    | _ -> failwith "Expected ']'")
   | a::d -> parse_literal tok
   | [] -> failwith "Empty expression"
 and parse_literal (tok: string list) : (Util.exp * string list) =

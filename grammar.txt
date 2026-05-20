@@ -26,6 +26,7 @@
 <factor> ->
     | "(" <exp> ")"
     | <ident>
+    | <ident> "[" int "]"
     | "[" <list> "]"
     | <literal>
     | <uop>
