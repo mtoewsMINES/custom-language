@@ -26,11 +26,19 @@
 <factor> ->
     | "(" <exp> ")"
     | <ident>
-    | int | string | bool
+    | "[" <list> "]"
+    | <literal>
     | <uop>
 <uop> ->
     | "!" <exp>
+<list> ->
+    | <literal> "," <list>
+    | <literal>
+    | ""
+<literal> ->
+    | int | string | bool
 
 
-<ptype> -> "int" | "string" | "bool"
+<ptype> -> "int" <adt> | "string" <adt> | "bool" <adt>
+<adt> -> "list" | ""
 <ident> -> alphanumeric characters

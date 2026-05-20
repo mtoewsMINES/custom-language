@@ -18,12 +18,18 @@ let rec parse_prog_helper (tok: string list) (stmt_list: stmt list) : (Util.stmt
 and parse_stmt (tok: string list) : (Util.stmt * string list) =
   match tok with 
   | "print"::d -> let (exp, remtok) = parse_exp d in (PrintStmt(exp), remtok)
-  | "int"::i::"->"::d ->
-    let (exp, remtok) = parse_exp d in (DecStmt(IntType, i, exp), remtok)
-  | "string"::i::"->"::d ->
-    let (exp, remtok) = parse_exp d in (DecStmt(StringType, i, exp), remtok)
-  | "bool"::i::"->"::d -> 
-    let (exp, remtok) = parse_exp d in (DecStmt(BoolType, i, exp), remtok)
+  | t::i::"->"::d ->
+    (match t with 
+    | "int" -> let (exp, remtok) = parse_exp d in (DecStmt(Ptype IntType, i, exp), remtok)
+    | "string" -> let (exp, remtok) = parse_exp d in (DecStmt(Ptype StringType, i, exp), remtok)
+    | "bool" -> let (exp, remtok) = parse_exp d in (DecStmt(Ptype BoolType, i, exp), remtok)
+    | _ -> failwith ("Invalid type" ^ t))
+  | t::"list"::i::"->"::d ->
+    (match t with 
+    | "int" -> let (exp, remtok) = parse_exp d in (DecStmt(Ltype IntType, i, exp), remtok)
+    | "string" -> let (exp, remtok) = parse_exp d in (DecStmt(Ltype StringType, i, exp), remtok)
+    | "bool" -> let (exp, remtok) = parse_exp d in (DecStmt(Ltype BoolType, i, exp), remtok)
+    | _ -> failwith ("Invalid type: " ^ t ^ " list"))
   | i::"->"::d ->
     let (exp, remtok) = parse_exp d in (AssignStmt(i, exp), remtok)
   | "if"::d ->
@@ -75,6 +81,15 @@ and parse_factor (tok: string list) : (Util.exp * string list) =
     match remtok with 
     | ")"::d -> (ast, d)
     | _ -> failwith "Expected ')'")
+  | "["::d ->
+    (let (ast, remtok) = parse_list d [] in
+    match remtok with 
+    | "]"::d -> (ValExp (List ast), d)
+    | _ -> failwith "Expected ']'")
+  | a::d -> parse_literal tok
+  | [] -> failwith "Empty expression"
+and parse_literal (tok: string list) : (Util.exp * string list) =
+  match tok with
   | "false"::d -> (ValExp(Bool false), d)
   | "true"::d -> (ValExp(Bool true), d)
   | "\""::s::"\""::d -> (ValExp(String s), d)
@@ -85,8 +100,21 @@ and parse_factor (tok: string list) : (Util.exp * string list) =
     (match x.[0] with 
     | 'a'..'z' | 'A'..'Z' -> (VarExp(x), d)
     | '0'..'9' -> (ValExp(Int (int_of_string x)), d)
-    | _ -> failwith ("Invalid Terminal: " ^ x))
-  | [] -> failwith "Empty expression"
+    | _ -> failwith ("Invalid Literal: " ^ x))
+  | [] -> failwith "Empty literal"
+and parse_list (tok: string list) (acc: exp list): (exp list * string list) = 
+  match tok with 
+  | f::"]"::d -> 
+    let (lit, remtok) = parse_literal tok in
+    (lit::acc, remtok)
+  | f::d ->
+    let (lit, remtok) = parse_literal tok in
+    (match remtok with 
+    | ","::d ->
+      let (l, remtok) = parse_list d acc in
+      (lit::l, remtok) 
+    | _ -> failwith "Expected ','")
+  | [] -> failwith "Invalid list assignment"
 let parse_prog (tok: string list) : Util.stmt list = 
   let (stmt_list, remtok) = parse_prog_helper tok [] in
   List.rev stmt_list

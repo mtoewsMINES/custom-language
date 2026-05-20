@@ -17,16 +17,45 @@ let rec eval_exp (env: environment_t) (exp: Util.exp) : Util.value_t =
     (match uop with 
     | Not -> Bool(not (val_to_bool (eval_exp env e))))
 
+let rec eval_list (env: environment_t) (list: exp list) (t: string) : value_t = 
+  match list with 
+  | [] -> List []
+  | e::d -> 
+    (match e with 
+    | ValExp v ->
+      (match v, t with 
+      | (Int _, "int") | (String _, "string") | (Bool _, "bool") ->
+        (match eval_list env d t with List l -> List (e::l) | _ -> failwith "something real bad")
+      | _ -> failwith "Invalid list assignment during eval")
+    | VarExp v ->
+      let result = eval_exp env e in
+      (match result, t with 
+      | (Int _, "int") | (String _, "string") | (Bool _, "bool") ->
+        (match eval_list env d t with List l -> List (ValExp result::l) | _ -> failwith "something real bad")
+      | _ -> failwith "Invalid list declaration during eval")
+    | _ -> failwith "Cannot assign non val/var to list")
+
 let rec eval_stmt (env: environment_t) (stmt: Util.stmt) : environment_t =
   match stmt with 
   | DecStmt(t,i,e) -> 
     (match t with 
-    | IntType -> (match eval_exp env e with 
-                | Int n -> StringMap.add i (Int n) env | _ -> failwith ("TypeError: Declared int -> non-int"))
-    | StringType -> (match eval_exp env e with 
-                | String s -> StringMap.add i (String s) env | _ -> failwith ("TypeError: Declared string -> non-string"))
-    | BoolType -> (match eval_exp env e with 
-                | Bool b -> StringMap.add i (Bool b) env | _ -> failwith ("TypeError: Declared bool -> non-bool")))
+    | Ptype t -> 
+      (match t with 
+      | IntType -> (match eval_exp env e with 
+                  | Int n -> StringMap.add i (Int n) env | _ -> failwith ("TypeError: Declared int -> non-int"))
+      | StringType -> (match eval_exp env e with 
+                  | String s -> StringMap.add i (String s) env | _ -> failwith ("TypeError: Declared string -> non-string"))
+      | BoolType -> (match eval_exp env e with 
+                  | Bool b -> StringMap.add i (Bool b) env | _ -> failwith ("TypeError: Declared bool -> non-bool")))
+    |Ltype t ->
+      (match t with 
+      | IntType -> (match eval_exp env e with 
+                  | List l -> StringMap.add i (eval_list env l "int") env | _ -> failwith ("TypeError: Declared int list -> non-int list"))
+      | StringType -> (match eval_exp env e with 
+                  | List l -> StringMap.add i (List l) env | _ -> failwith ("TypeError: Declared string list -> non-string list"))
+      | BoolType -> (match eval_exp env e with 
+                  | List l -> StringMap.add i (List l) env | _ -> failwith ("TypeError: Declared bool list -> non-bool list"))))
+
   | AssignStmt(i,e) ->
     (match eval_exp env e with 
     | Int n -> (match StringMap.find i env with 
@@ -34,17 +63,28 @@ let rec eval_stmt (env: environment_t) (stmt: Util.stmt) : environment_t =
     | String s -> (match StringMap.find i env with 
                 | String _ -> StringMap.add i (String s) env | _ -> failwith ("TypeError: Cannot assign string to " ^ i))
     | Bool b -> (match StringMap.find i env with 
-                | Bool _ -> StringMap.add i (Bool b) env | _ -> failwith ("TypeError: Cannot assign bool to " ^ i)))
-    | IfStmt (cond, p1, p2) ->
-      let env_copy = env in
-      ignore (if (val_to_bool(eval_exp env cond)) then eval_prog env_copy p1 else eval_prog env_copy p2);
-      env
-    | PrintStmt e ->
-      (match eval_exp env e with 
-      | Int n -> print_endline (string_of_int n)
-      | String s -> print_endline s
-      | Bool b -> print_endline (string_of_bool b));
-      env
+                | Bool _ -> StringMap.add i (Bool b) env | _ -> failwith ("TypeError: Cannot assign bool to " ^ i))
+    | List (l::d) -> 
+      (match StringMap.find i env with
+      | List (t::_) -> 
+        (match eval_exp env t, eval_exp env l with 
+        | (Int _, Int _) | (String _, String _) | (Bool _, Bool _) ->
+          StringMap.add i (List (l::d)) env
+        | _ -> failwith "TypeError: Invalid list assignment during eval")
+      | List [] -> StringMap.add i (List (l::d)) env (*Allows for messing up types later :(. Oversight on my part, but too late now*)
+      | _ -> failwith "TypeError: Cannot assign list to non-list")
+    | List [] -> StringMap.add i (List []) env)
+  | IfStmt (cond, p1, p2) ->
+    let env_copy = env in
+    ignore (if (val_to_bool(eval_exp env cond)) then eval_prog env_copy p1 else eval_prog env_copy p2);
+    env
+  | PrintStmt e ->
+    (match eval_exp env e with 
+    | Int n -> print_endline (string_of_int n)
+    | String s -> print_endline s
+    | Bool b -> print_endline (string_of_bool b)
+    | List l -> print_value_list l);
+    env
 
 and eval_prog (env: environment_t) (stmts: Util.stmt list) : environment_t =
   match stmts with 

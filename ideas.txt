@@ -1,9 +1,0 @@
-Features:
--data types (ints, strings, lists, bools)
--function (sequence) definition and call
--arithmetic
--boolean logic
--stdout
-
-Ideas:
--instead of a == b || a == c, do a == (b|c) or something

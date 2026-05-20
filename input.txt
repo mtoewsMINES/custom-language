@@ -1,12 +1,12 @@
 #the following is a test
-#int x -> 57;
-#bool b -> false;
+int x -> 57;
+bool b -> false;
 #string s -> "Hello World";
 
 #b -> true;
 #int c -> 8;
 
-bool d -> !(true && false);
+#bool d -> !(true && false);
 
 #if false {
 #    int c -> 9;
@@ -14,6 +14,11 @@ bool d -> !(true && false);
 #    int c -> 10;
 #};
 
-print d;
-print "newline time! \n";
-print "hello world";
+#print d;
+#print "newline time! \n";
+#print "hello world";
+
+int list l -> [x, 2, 3];
+print l;
+l -> [1, 2, 3, 4];
+print l;
