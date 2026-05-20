@@ -3,10 +3,10 @@
     | "{" <prog> "}"
     | ""
 <stmt> ->
-    #variable declaration/assignment
     | <ptype> <ident> "->" <exp> ";"
     | <ident> "->" <exp> ";"
     | "if" <exp> <prog> "else" <prog>
+    | "print" <exp>
 <exp> ->
     | <bop>
 <bop> ->

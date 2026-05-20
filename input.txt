@@ -1,15 +1,19 @@
 #the following is a test
-int x -> 57;
-bool b -> false;
-string s -> "Hello World";
+#int x -> 57;
+#bool b -> false;
+#string s -> "Hello World";
 
-b -> true;
-int c -> 8;
+#b -> true;
+#int c -> 8;
 
 bool d -> !(true && false);
 
-if false {
-    int c -> 9;
-} else {
-    int c -> 10;
-};
+#if false {
+#    int c -> 9;
+#} else {
+#    int c -> 10;
+#};
+
+print d;
+print "newline time! \n";
+print "hello world";

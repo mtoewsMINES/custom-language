@@ -10,6 +10,7 @@ and stmt =
   | DecStmt of ptype * string * exp
   | AssignStmt of string * exp
   | IfStmt of exp * stmt list * stmt list
+  | PrintStmt of exp
 and exp = 
   | VarExp of string
   | ValExp of value_t
@@ -19,7 +20,6 @@ and value_t =
   | Int of int
   | String of string
   | Bool of bool
-  (* | Closure of stmt list * environment_t *)
 
 let val_to_int (v: value_t) : int = 
   match v with 

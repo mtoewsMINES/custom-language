@@ -23,10 +23,26 @@ let rec lex_number (f: in_channel) : string =
     | _ -> raise e
 
 let rec lex_string (f: in_channel) : string = 
-  let next_char = input_char f in
-  match next_char with 
-  | '\"' -> ""
-  | _ -> (String.make 1 next_char) ^ (lex_string f)
+  try
+    let next_char = input_char f in
+    match next_char with 
+    | '\"' -> ""
+    | '\\' ->
+          (try 
+            match input_char f with 
+            | 'n' -> "\n" ^ (lex_string f)
+            | 'r' -> "\r" ^ (lex_string f)
+            | 't' -> "\t" ^ (lex_string f)
+            | _ -> failwith "Invalid escape sequence"
+          with e ->
+            (match e with 
+            | End_of_file -> failwith "Empty escape sequence"
+            | _ -> raise e))
+    | _ -> (String.make 1 next_char) ^ (lex_string f)
+  with e ->
+    match e with 
+    | End_of_file -> failwith "Expected \""
+    | _ -> raise e
 
 let lex_file (f: in_channel) : (string list) = 
   let tokens = ref [] in

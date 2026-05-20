@@ -39,6 +39,12 @@ let rec eval_stmt (env: environment_t) (stmt: Util.stmt) : environment_t =
       let env_copy = env in
       ignore (if (val_to_bool(eval_exp env cond)) then eval_prog env_copy p1 else eval_prog env_copy p2);
       env
+    | PrintStmt e ->
+      (match eval_exp env e with 
+      | Int n -> print_endline (string_of_int n)
+      | String s -> print_endline s
+      | Bool b -> print_endline (string_of_bool b));
+      env
 
 and eval_prog (env: environment_t) (stmts: Util.stmt list) : environment_t =
   match stmts with 

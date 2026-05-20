@@ -17,6 +17,7 @@ let rec parse_prog_helper (tok: string list) (stmt_list: stmt list) : (Util.stmt
     | _ -> failwith "Expected ';'")
 and parse_stmt (tok: string list) : (Util.stmt * string list) =
   match tok with 
+  | "print"::d -> let (exp, remtok) = parse_exp d in (PrintStmt(exp), remtok)
   | "int"::i::"->"::d ->
     let (exp, remtok) = parse_exp d in (DecStmt(IntType, i, exp), remtok)
   | "string"::i::"->"::d ->
