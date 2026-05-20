@@ -40,7 +40,15 @@ and parse_stmt (tok: string list) : (Util.stmt * string list) =
       let (p2, remtok) = parse_prog_helper d [] in
       (IfStmt(cond, p1, p2), remtok)
     | _ -> failwith "Expected 'else'")
-  | a::d -> failwith ("Invalid Statement: " ^ a)
+  | i::d -> 
+    (match d with 
+    | "."::"append"::"("::d ->
+      let (exp, remtok) = parse_exp d in
+      (match remtok with 
+      | ")"::d -> (AppendStmt(i, exp), d)
+      | _ -> failwith "Expected ')'")
+    | "."::"reverse"::"("::")"::d -> (ReverseStmt(i), d)
+    | _ -> failwith ("Invalid Statement: " ^ i))
   | [] -> failwith "Empty Statement"
 and parse_exp (tok: string list) : (Util.exp * string list) =
   parse_bop tok
@@ -108,18 +116,12 @@ and parse_literal (tok: string list) : (Util.exp * string list) =
     | _ -> failwith ("Invalid Literal: " ^ x))
   | [] -> failwith "Empty literal"
 and parse_list (tok: string list) (acc: exp list): (exp list * string list) = 
-  match tok with 
-  | f::"]"::d -> 
-    let (lit, remtok) = parse_literal tok in
-    (lit::acc, remtok)
-  | f::d ->
-    let (lit, remtok) = parse_literal tok in
-    (match remtok with 
-    | ","::d ->
-      let (l, remtok) = parse_list d acc in
-      (lit::l, remtok) 
-    | _ -> failwith "Expected ','")
-  | [] -> failwith "Invalid list assignment"
+  let (lit, remtok) = parse_literal tok in 
+  (match remtok with 
+  | "]"::d -> (lit::acc, remtok)
+  | ","::d -> 
+    let (l, remtok) = parse_list d acc in (lit::l, remtok)
+  | _ -> failwith "Invalid list assignment")
 let parse_prog (tok: string list) : Util.stmt list = 
   let (stmt_list, remtok) = parse_prog_helper tok [] in
   List.rev stmt_list

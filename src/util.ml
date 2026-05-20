@@ -14,6 +14,8 @@ and stmt =
   | AssignStmt of string * exp
   | IfStmt of exp * stmt list * stmt list
   | PrintStmt of exp
+  | AppendStmt of string * exp
+  | ReverseStmt of string
 and exp = 
   | VarExp of string
   | ValExp of value_t

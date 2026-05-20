@@ -7,6 +7,8 @@
     | <ident> "->" <exp> ";"
     | "if" <exp> <prog> "else" <prog>
     | "print" <exp>
+    | <ident> "." "append" "(" <exp> ")"
+    | <ident> "." "reverse" "(" ")"
 <exp> ->
     | <bop>
 <bop> ->

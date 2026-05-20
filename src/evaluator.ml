@@ -98,6 +98,20 @@ let rec eval_stmt (env: environment_t) (stmt: Util.stmt) : environment_t =
     | Bool b -> print_endline (string_of_bool b)
     | List l -> print_value_list l);
     env
+  | AppendStmt (i, e) ->
+    (match StringMap.find i env with
+    | List (h::t) -> 
+      (match eval_exp env h, eval_exp env e with 
+      | (Int _, Int _) | (String _, String _) | (Bool _, Bool _) ->
+        StringMap.add i (List (h::t @ [e])) env
+      | _ -> failwith "TypeError: Invalid list append during eval")
+    | List [] -> StringMap.add i (List [e]) env (*Allows for messing up types later :(. Oversight on my part, but too late now*)
+    | _ -> failwith "TypeError: Cannot append list to list (use '+')")
+  | ReverseStmt i ->
+    (match StringMap.find i env with 
+    | List l -> StringMap.add i (List (List.rev l)) env
+    | _ -> failwith "Cannot reverse a non-list")
+
 
 and eval_prog (env: environment_t) (stmts: Util.stmt list) : environment_t =
   match stmts with 

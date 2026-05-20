@@ -1,10 +1,4 @@
 Features:
--data types (ints, strings, lists, bools)
--function (sequence) definition and call
--arithmetic
--boolean logic
--stdout
-
-lists
--append (element and list)
--reverse
+-strings
+-function definition and call
+-loops

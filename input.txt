@@ -1,5 +1,5 @@
 #the following is a test
-int x -> 5 + 5;
+#int x -> 5 + 5;
 #bool b -> false;
 #string s -> "Hello World";
 
@@ -18,11 +18,16 @@ int x -> 5 + 5;
 #print "newline time! \n";
 #print "hello world";
 
-int list l -> [x, 2, 3];
-int list l2 -> [4, 5, 6];
-l -> l + l2;
+#int list l -> [x, 2, 3];
+#l.reverse();
+#l.append(5);
+
+#int list l2 -> [4, 5, 6];
+#l -> l + l2;
 #print l;
 #l -> [1, 2, 3, 4];
 #print l;
+#int t -> l[2];
 
-int t -> l[2];
+string list slist -> ["a", "b", "c"];
+bool list blist -> [true, false, false, true];
