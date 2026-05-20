@@ -1,35 +1,37 @@
 #the following is a test
-int x -> 5 + 5;
-bool b -> false;
-string s -> "Hello World";
+#int x -> 5 + 5;
+#bool b -> false;
+#string s -> "Hello World";
 
-b -> true;
-int c -> 8;
+#b -> true;
+#int c -> 8;
 
-bool d -> !(true && false);
+#bool d -> !(true && false);
 
-if false {
-    int c -> 9;
-} else {
-    int c -> 10;
-};
+#if false {
+#    int c -> 9;
+#} else {
+#    int c -> 10;
+#};
 
-print d;
-print "newline time! \n";
-print "hello world";
+#print d;
+#print "newline time! \n";
+#print "hello world";
 
-int list l -> [x, 2, 3];
-l.reverse();
-l.append(5);
+#int list l -> [x, 2, 3];
+#l.reverse();
+#l.append(5);
 
-int list l2 -> [4, 5, 6];
-l -> l + l2;
-print l;
-l -> [1, 2, 3, 4];
-print l;
-int t -> l[2];
+#int list l2 -> [4, 5, 6];
+#l -> l + l2;
+#print l;
+#l -> [1, 2, 3, 4];
+#print l;
+#int t -> l[2];
 
-string list slist -> ["a", "b", "c"];
-bool list blist -> [true, false, false, true];
+#string list slist -> ["a", "b", "c"];
+#bool list blist -> [true, false, false, true];
 
-bool equal_test -> 5 = 5;
+#bool equal_test -> 5 = 5;
+string s -> "Hello" + " " + "World!";
+string char -> s[2];

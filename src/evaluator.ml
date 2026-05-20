@@ -7,7 +7,8 @@ let eval_index (env: environment_t) (list: value_t) (index: value_t) : value_t =
     (match List.nth l n with 
     | ValExp v -> v
     | _ -> failwith ("Non value at index" ^ (string_of_int n)))
-  | _ -> failwith "Cannot eval index"
+  | (String l, Int n) -> String(String.make 1 l.[n])
+  | _ -> failwith "Cannot eval index on non-list/non-string"
 
 let rec eval_exp (env: environment_t) (exp: Util.exp) : Util.value_t = 
   match exp with 
@@ -19,6 +20,7 @@ let rec eval_exp (env: environment_t) (exp: Util.exp) : Util.value_t =
       (match eval_exp env e1, eval_exp env e2 with 
       | (Int n1, Int n2) -> Int(n1 + n2)
       | (List l1, List l2) -> List(l1 @ l2)
+      | (String s1, String s2) -> String(s1 ^ s2)
       | _ -> failwith "Proper usage of '+': int + int | list + list")
     | Sub -> Int(val_to_int(eval_exp env e1) - val_to_int(eval_exp env e2))
     | Mul -> Int(val_to_int(eval_exp env e1) * val_to_int(eval_exp env e2))
