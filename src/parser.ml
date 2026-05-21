@@ -46,13 +46,18 @@ and parse_stmt (tok: string list) : (Util.stmt * string list) =
     let (cond, remtok) = parse_exp d in
     let (p, remtok) = parse_prog_helper remtok [] in
     (WhileStmt(cond, p), remtok)
-  | "func"::i::"("::d -> failwith "funcdef not implemented"
-    (* let (l, remtok) = parse_params d [] in
+  | "func"::i::"("::d -> 
+    let (l, remtok) = parse_param_def d [] in
     (match remtok with 
     | ")"::d ->
       let (p, remtok) = parse_prog_helper d [] in
       (FuncDefStmt(i,l,p), remtok)
-    | _ -> failwith "Expected )") *)
+    | _ -> failwith "Expected )")
+  | i::"("::d -> 
+    let (params, remtok) = parse_param_call d [] in
+    (match remtok with 
+    | ")"::d -> (FuncCallStmt(i, params), d)
+    | _ -> failwith "Expected ')'")
   | i::d -> 
     (match d with 
     | "."::"append"::"("::d ->
@@ -150,21 +155,35 @@ and parse_list (tok: string list) (acc: exp list): (exp list * string list) =
   | ","::d -> 
     let (l, remtok) = parse_list d acc in (lit::l, remtok)
   | _ -> failwith "Invalid list assignment")
-(* and parse_params (tok: string list) (acc: exp list): (exp list * string list) = 
-  let (lit, remtok) = parse_type tok in 
+and parse_param_def (tok: string list) (acc: typedef list): (typedef list * string list) = 
+  let (tp, remtok) = parse_type tok in 
+  (match remtok with 
+  | ")"::d -> (tp::acc, remtok)
+  | ","::d -> 
+    let (l, remtok) = parse_param_def d acc in (tp::l, remtok)
+  | _ -> failwith "Invalid parameter assignment (def)")
+and parse_param_call (tok: string list) (acc: exp list): (exp list * string list) = 
+  let (lit, remtok) = parse_literal tok in 
   (match remtok with 
   | ")"::d -> (lit::acc, remtok)
   | ","::d -> 
-    let (l, remtok) = parse_params d acc in (lit::l, remtok)
-  | _ -> failwith "Invalid parameter assignment")
-and parse_type (tok: string list) : ((ptype * string) * string list) = 
+    let (l, remtok) = parse_param_call d acc in (lit::l, remtok)
+  | _ -> failwith "Invalid parameter assignment (call)")
+and parse_type (tok: string list) : (typedef * string list) = 
   match tok with 
+  | t::"list"::i::d ->
+  (match t with 
+  | "int" -> (TypeDef(Ltype IntType, i), d)
+  | "string" -> (TypeDef(Ltype StringType, i), d)
+  | "bool" -> (TypeDef(Ltype BoolType, i), d)
+  | _ -> failwith ("Invalid parameter type " ^ t ^ " list"))
   | "int"::i::d -> 
-    (TypeDef(IntType i), d)
+    (TypeDef(Ptype IntType, i), d)
   | "string"::i::d ->
-    (TypeDef(StringType i), d)
+    (TypeDef(Ptype StringType, i), d)
   | "bool"::i::d ->
-    (TypeDef(BoolType i), d) *)
+    (TypeDef(Ptype BoolType, i), d)
+  | _ -> failwith "Invalid parameter type"
 let parse_prog (tok: string list) : Util.stmt list = 
   let (stmt_list, remtok) = parse_prog_helper tok [] in
   List.rev stmt_list

@@ -64,6 +64,25 @@ let rec eval_list (env: environment_t) (list: exp list) (t: string) : value_t =
       | _ -> failwith "Invalid list declaration during eval")
     | _ -> failwith "Cannot assign non val/var to list")
 
+let rec assign_params (env: environment_t) (def: typedef list) (call: exp list) : environment_t = 
+  match def, call with 
+  | ([], []) -> env
+  | (TypeDef(typ, i)::t1, c::t2) -> 
+    let v = eval_exp env c in
+    (match typ, v with 
+    | (Ptype IntType, Int _) | (Ptype StringType, String _) | (Ptype BoolType, Bool _)-> 
+      StringMap.add i v (assign_params env t1 t2)
+    | (Ltype t, List l) -> 
+      (match l with 
+      | [] -> StringMap.add i (List []) (assign_params env t1 t2)
+      | h::tail -> 
+        (match t, eval_exp env h with
+        | (IntType, Int _) | (StringType, String _) | (BoolType, Bool _) ->
+          StringMap.add i (List l) (assign_params env t1 t2)
+        | _ -> failwith "Invalid list type for func call"))
+    | _ -> failwith "Invalid parameter")
+  | _ -> failwith "Mismatched function parameters between def and call"
+
 let rec eval_stmt (env: environment_t) (stmt: Util.stmt) : environment_t =
   match stmt with 
   | DecStmt(t,i,e) -> 
@@ -102,7 +121,8 @@ let rec eval_stmt (env: environment_t) (stmt: Util.stmt) : environment_t =
         | _ -> failwith "TypeError: Invalid list assignment during eval")
       | List [] -> StringMap.add i (List (l::d)) env (*Allows for messing up types later :(. Oversight on my part, but too late now*)
       | _ -> failwith "TypeError: Cannot assign list to non-list")
-    | List [] -> StringMap.add i (List []) env)
+    | List [] -> StringMap.add i (List []) env
+    | Closure (_, _) -> failwith "cannot reassign function")
   | IfStmt (cond, p1, p2) ->
     (* let env_copy = env in
     ignore (if (val_to_bool(eval_exp env cond)) then eval_prog env_copy p1 else eval_prog env_copy p2);
@@ -113,7 +133,8 @@ let rec eval_stmt (env: environment_t) (stmt: Util.stmt) : environment_t =
     | Int n -> print_endline (string_of_int n)
     | String s -> print_endline s
     | Bool b -> print_endline (string_of_bool b)
-    | List l -> print_value_list l);
+    | List l -> print_value_list l
+    | Closure (_, _) -> failwith "cannot print closure");
     env
   | AppendStmt (i, e) ->
     (match StringMap.find i env with
@@ -137,8 +158,16 @@ let rec eval_stmt (env: environment_t) (stmt: Util.stmt) : environment_t =
           done;
           !new_env
       | _ -> failwith "Invalid while condition")
-  | FuncDefStmt (i, param, prog) -> failwith "FuncDef not implemented"
-
+  | FuncDefStmt (i, param, prog) -> 
+    StringMap.add i (Closure(param, prog)) env
+  | FuncCallStmt (i, param_call) ->
+    let clos = StringMap.find i env in
+    (match clos with 
+    | Closure (param_def, prog) -> 
+      let new_env = assign_params env param_def param_call in
+      ignore(eval_prog new_env prog);
+      env
+    | _ -> failwith "Can't call non-function")
 
 and eval_prog (env: environment_t) (stmts: Util.stmt list) : environment_t =
   match stmts with 

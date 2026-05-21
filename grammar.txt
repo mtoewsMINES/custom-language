@@ -10,7 +10,8 @@
     | <ident> "." "append" "(" <exp> ")"
     | <ident> "." "reverse" "(" ")"
     | "while" <exp> <prog>
-    | "func <ident> "(" <param> ")" <prog>
+    | "func <ident> "(" <paramdef> ")" <prog>
+    | <ident> "(" <list> ")"
 <exp> ->
     | <bop>
 <bop> ->

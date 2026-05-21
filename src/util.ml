@@ -7,7 +7,7 @@ type ptype = IntType | StringType | BoolType
 type type_t = 
   | Ptype of ptype
   | Ltype of ptype
-type typedef = TypeDef of ptype * string
+type typedef = TypeDef of type_t * string
 
 type environment_t = value_t StringMap.t
 and stmt = 
@@ -18,7 +18,8 @@ and stmt =
   | PrintStmt of exp
   | AppendStmt of string * exp
   | ReverseStmt of string
-  | FuncDefStmt of string * exp list * stmt list
+  | FuncDefStmt of string * typedef list * stmt list
+  | FuncCallStmt of string * exp list
 and exp = 
   | VarExp of string
   | ValExp of value_t
@@ -30,6 +31,7 @@ and value_t =
   | String of string
   | Bool of bool
   | List of exp list
+  | Closure of typedef list * stmt list
 
 let val_to_int (v: value_t) : int = 
   match v with 
@@ -56,7 +58,8 @@ let to_string (e: exp) : string =
     | Int n -> string_of_int n
     | String s -> s
     | Bool b -> string_of_bool b
-    | List l -> "to_string (list) not implemented")
+    | List l -> "to_string (list) not implemented"
+    | Closure (_, _) -> "to_string (closure) not implemented")
   | _ -> "some problem idk"
 
 let rec print_list l = 
@@ -82,4 +85,5 @@ StringMap.iter (fun key value ->
   | String s -> Printf.printf "%s -> %s\n" key s
   | Bool b -> Printf.printf "%s -> %b\n" key b
   | List l -> Printf.printf "%s -> " key; print_value_list l
+  | Closure (_, _) -> Printf.printf "%s -> " key; print_endline (to_string (ValExp value))
 ) m

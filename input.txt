@@ -4,7 +4,7 @@
 #string s -> "Hello World";
 
 #b -> true;
-int c -> 8;
+#int c -> 8;
 
 #bool d -> !(true && false);
 
@@ -51,8 +51,23 @@ int c -> 8;
 #};
 #print "end";
 
-func myfunc(int a, int b, int c) {
-    print a;
-    print b;
-    print b;
-};
+#int a -> 6;
+#func myfunc(int a, int b, int c) {
+#    a -> a + 1;
+#    print a;
+#    print b;
+#    print c;
+#};
+#myfunc(1, 2, 3);
+#print a;
+
+#func print_list(string list l) {
+#    int i -> 0;
+#   while i < 3 {
+#        print l[i];
+#        i -> i + 1;
+#    };
+#};
+
+#string list my_list -> ["Hello", "World", "!"];
+#print_list(my_list);
