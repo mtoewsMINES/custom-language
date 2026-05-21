@@ -26,12 +26,31 @@ and parse_stmt (tok: string list) : (Util.stmt * string list) =
     | "string" -> let (exp, remtok) = parse_exp d in (DecStmt(Ptype StringType, i, exp), remtok)
     | "bool" -> let (exp, remtok) = parse_exp d in (DecStmt(Ptype BoolType, i, exp), remtok)
     | _ -> failwith ("Invalid type" ^ t))
-  | t::"list"::i::"->"::d ->
+
+
+    
+  | t::"list"::i::"->"::"["::"]"::d ->
     (match t with 
-    | "int" -> let (exp, remtok) = parse_exp d in (DecStmt(Ltype IntType, i, exp), remtok)
-    | "string" -> let (exp, remtok) = parse_exp d in (DecStmt(Ltype StringType, i, exp), remtok)
-    | "bool" -> let (exp, remtok) = parse_exp d in (DecStmt(Ltype BoolType, i, exp), remtok)
+    | "int" -> (DecStmt(Ltype IntType, i, ValExp(List(Ltype IntType, []))), d)
+    | "string" -> (DecStmt(Ltype StringType, i, ValExp(List(Ltype StringType, []))), d)
+    | "bool" -> (DecStmt(Ltype BoolType, i, ValExp(List(Ltype BoolType, []))), d)
     | _ -> failwith ("Invalid type: " ^ t ^ " list"))
+  | t::"list"::i::"->"::"["::d ->
+    (let (ast, remtok) = parse_list d [] in
+    match remtok with 
+    | "]"::d -> 
+      (match t with 
+      | "int" -> (DecStmt(Ltype IntType, i, ValExp(List(Ltype IntType, ast))), d)
+      | "string" -> (DecStmt(Ltype StringType, i, ValExp(List(Ltype StringType, ast))), d)
+      | "bool" -> (DecStmt(Ltype BoolType, i, ValExp(List(Ltype BoolType, ast))), d)
+      | _ -> failwith ("Invalid type: " ^ t ^ " list"))
+    | _ -> failwith "Expected ']'")
+  | i::"->"::"["::"]"::d -> (AssignStmt(i, ValExp(List(Ltype IntType, []))), d)
+  | i::"->"::"["::d ->
+    (let (ast, remtok) = parse_list d [] in
+    match remtok with 
+    | "]"::d -> (AssignStmt(i, ValExp(List(Ltype IntType, ast))), d)
+    | _ -> failwith "Expected ']'")
   | i::"->"::d ->
     let (exp, remtok) = parse_exp d in (AssignStmt(i, exp), remtok)
   | "if"::d ->
@@ -126,12 +145,6 @@ and parse_factor (tok: string list) : (Util.exp * string list) =
     match remtok with 
     | ")"::d -> (ast, d)
     | _ -> failwith "Expected ')'")
-  | "["::"]"::d -> (ValExp(List []), d)
-  | "["::d ->
-    (let (ast, remtok) = parse_list d [] in
-    match remtok with 
-    | "]"::d -> (ValExp(List ast), d)
-    | _ -> failwith "Expected ']'")
   | i::"."::"length"::"("::")"::d -> (LengthExp(i), d)
   | i::"["::d ->
     (let (index, remtok) = parse_literal d in

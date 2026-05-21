@@ -3,7 +3,7 @@ open Util
 
 let eval_index (env: environment_t) (list: value_t) (index: value_t) : value_t = 
   match list, index with 
-  | (List l, Int n) -> 
+  | (List (t, l), Int n) -> 
     (match List.nth l n with 
     | ValExp v -> v
     | _ -> failwith ("Non value at index" ^ (string_of_int n)))
@@ -19,7 +19,8 @@ let rec eval_exp (env: environment_t) (exp: Util.exp) : Util.value_t =
     | Add -> 
       (match eval_exp env e1, eval_exp env e2 with 
       | (Int n1, Int n2) -> Int(n1 + n2)
-      | (List l1, List l2) -> List(l1 @ l2)
+      | (List (t1, l1), List (t2, l2)) -> 
+          if t1 = t2 then List(t1, l1 @ l2) else failwith "Cannot append lists of different types"
       | (String s1, String s2) -> String(s1 ^ s2)
       | _ -> failwith "Proper usage of '+': int + int | list + list")
     | Sub -> Int(val_to_int(eval_exp env e1) - val_to_int(eval_exp env e2))
@@ -47,17 +48,17 @@ let rec eval_exp (env: environment_t) (exp: Util.exp) : Util.value_t =
   | IndexExp (i, index) -> eval_index env (StringMap.find i env) (eval_exp env index)
   | LengthExp i -> 
     (match StringMap.find i env with 
-    | List l -> Int(List.length l)
+    | List (t, l) -> Int(List.length l)
     | _ -> failwith "Cannot find length of non-list")
 
 let rec eval_list (env: environment_t) (list: exp list) (t: string) : value_t = 
   match list with 
-  | [] -> List []
+  | [] -> List (Ltype (match t with | "int" -> IntType | "string" -> StringType | "Bool" -> BoolType | _ -> failwith "invalid type for list"), [])
   | e::d -> 
     let v = eval_exp env e in
     (match t, v with
     | ("int", Int _) | ("string", String _) | ("bool", Bool _) ->
-      (match eval_list env d t with List l -> List((ValExp v)::l) | _ -> failwith "list evaluated to non-list")
+      (match eval_list env d t with List (t,l) -> List(t, (ValExp v)::l) | _ -> failwith "list evaluated to non-list")
     | _ -> failwith "Invalid list assignment during eval")
 
 let rec assign_params (env: environment_t) (def: typedef list) (call: exp list) : environment_t = 
@@ -68,13 +69,13 @@ let rec assign_params (env: environment_t) (def: typedef list) (call: exp list) 
     (match typ, v with 
     | (Ptype IntType, Int _) | (Ptype StringType, String _) | (Ptype BoolType, Bool _)-> 
       StringMap.add i v (assign_params env t1 t2)
-    | (Ltype t, List l) -> 
+    | (Ltype t, List(lt, l)) -> 
       (match l with 
-      | [] -> StringMap.add i (List []) (assign_params env t1 t2)
+      | [] -> StringMap.add i (List (typ, [])) (assign_params env t1 t2)
       | h::tail -> 
         (match t, eval_exp env h with
         | (IntType, Int _) | (StringType, String _) | (BoolType, Bool _) ->
-          StringMap.add i (List l) (assign_params env t1 t2)
+          StringMap.add i (List (typ, l)) (assign_params env t1 t2)
         | _ -> failwith "Invalid list type for func call"))
     | _ -> failwith "Invalid parameter")
   | _ -> failwith "Mismatched function parameters between def and call"
@@ -94,11 +95,11 @@ let rec eval_stmt (env: environment_t) (stmt: Util.stmt) : environment_t =
     |Ltype t ->
       (match t with 
       | IntType -> (match eval_exp env e with 
-                  | List l -> StringMap.add i (eval_list env l "int") env | _ -> failwith ("TypeError: Declared int list -> non-int list"))
+                  | List (t, l) -> StringMap.add i (eval_list env l "int") env | _ -> failwith ("TypeError: Declared int list -> non-int list"))
       | StringType -> (match eval_exp env e with 
-                  | List l -> StringMap.add i (List l) env | _ -> failwith ("TypeError: Declared string list -> non-string list"))
+                  | List (t, l) -> StringMap.add i (eval_list env l "string") env | _ -> failwith ("TypeError: Declared string list -> non-string list"))
       | BoolType -> (match eval_exp env e with 
-                  | List l -> StringMap.add i (List l) env | _ -> failwith ("TypeError: Declared bool list -> non-bool list"))))
+                  | List (t, l) -> StringMap.add i (eval_list env l "bool") env | _ -> failwith ("TypeError: Declared bool list -> non-bool list"))))
 
   | AssignStmt(i,e) ->
     (match eval_exp env e with 
@@ -108,17 +109,19 @@ let rec eval_stmt (env: environment_t) (stmt: Util.stmt) : environment_t =
                 | String _ -> StringMap.add i (String s) env | _ -> failwith ("TypeError: Cannot assign string to " ^ i))
     | Bool b -> (match StringMap.find i env with 
                 | Bool _ -> StringMap.add i (Bool b) env | _ -> failwith ("TypeError: Cannot assign bool to " ^ i))
-    | List (l::d) -> 
+    | List (typ, l::d) -> 
       (match StringMap.find i env with
-      | List (t::_) -> 
-        (match eval_exp env t, eval_exp env l with 
-        | (Int _, Int _) | (String _, String _) | (Bool _, Bool _) ->
-          StringMap.add i (List (l::d)) env
-        | _ -> failwith "TypeError: Invalid list assignment during eval")
-      | List [] -> StringMap.add i (List (l::d)) env (*Allows for messing up types later :(. Oversight on my part, but too late now*)
+      | List (typ2, _) -> 
+        StringMap.add i (eval_list env (l::d) (ltype_to_string typ2)) env
       | _ -> failwith "TypeError: Cannot assign list to non-list")
-    | List [] -> StringMap.add i (List []) env
-    | Closure (_, _) -> failwith "cannot reassign function")
+
+
+
+    | List (typ, []) -> 
+      (match StringMap.find i env with
+      | List (t, l) -> StringMap.add i (List (t, [])) env
+      | _ -> failwith "TypeError: Cannot assign list to non-list")
+  | Closure (_, _) -> failwith "cannot reassign function")
   | IfElseStmt (cond, p1, p2) ->
     if (val_to_bool(eval_exp env cond)) then eval_prog env p1 else eval_prog env p2
   | IfStmt (cond, p) ->
@@ -128,21 +131,25 @@ let rec eval_stmt (env: environment_t) (stmt: Util.stmt) : environment_t =
     | Int n -> print_endline (string_of_int n)
     | String s -> print_endline s
     | Bool b -> print_endline (string_of_bool b)
-    | List l -> print_value_list l
+    | List (t, l) -> print_value_list l
     | Closure (_, _) -> failwith "cannot print closure");
     env
   | AppendStmt (i, e) ->
     (match StringMap.find i env with
-    | List (h::t) -> 
+    | List (typ, (h::t)) -> 
       (match eval_exp env h, eval_exp env e with 
       | (Int _, Int _) | (String _, String _) | (Bool _, Bool _) ->
-        StringMap.add i (List (h::t @ [e])) env
+        StringMap.add i (List (typ, (h::t @ [e]))) env
       | _ -> failwith "TypeError: Invalid list append during eval")
-    | List [] -> StringMap.add i (List [e]) env (*Allows for messing up types later :(. Oversight on my part, but too late now*)
+    | List (typ, []) -> 
+      (match typ, eval_exp env e with 
+      | (Ltype IntType, Int _) | (Ltype StringType, String _) | (Ltype BoolType, Bool _) ->
+        StringMap.add i (List (typ, [e])) env 
+      | _ -> failwith "TypeError: Invalid list append during eval")
     | _ -> failwith "TypeError: Cannot append list to list (use '+')")
   | ReverseStmt i ->
     (match StringMap.find i env with 
-    | List l -> StringMap.add i (List (List.rev l)) env
+    | List (t, l) -> StringMap.add i (List (t, (List.rev l))) env
     | _ -> failwith "Cannot reverse a non-list")
   | WhileStmt (e, p) ->
       (match eval_exp env e with 

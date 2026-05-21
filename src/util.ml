@@ -32,7 +32,7 @@ and value_t =
   | Int of int
   | String of string
   | Bool of bool
-  | List of exp list
+  | List of type_t * exp list
   | Closure of typedef list * stmt list
 
 let val_to_int (v: value_t) : int = 
@@ -49,7 +49,7 @@ let val_to_bool (v: value_t) : bool =
   | _ -> failwith "Invalid input to val_to_bool"
 let val_to_list (v: value_t) : exp list =
   match v with
-  | List l -> l
+  | List (t, l) -> l
   | _ -> failwith "Invalid input to val_to_list"
 
 (*Helper functions*)
@@ -60,7 +60,7 @@ let to_string (e: exp) : string =
     | Int n -> string_of_int n
     | String s -> s
     | Bool b -> string_of_bool b
-    | List l -> "to_string (list) not implemented"
+    | List (t, l) -> "to_string (list) not implemented"
     | Closure (_, _) -> "to_string (closure) not implemented")
   | _ -> "some problem idk"
 
@@ -73,12 +73,20 @@ let rec print_list l =
 let print_value_list l = 
   let rec h l = 
     match l with 
-    | [] -> print_string "\n"
-    | a::[] -> print_string ((to_string a)^"]\n");
+    | [] -> ()
+    | a::[] -> print_string ((to_string a));
     | a::d -> print_string ((to_string a)^", "); h d
   in
     print_string "[";
-    h l
+    h l;
+    print_string "]\n"
+
+let ltype_to_string t = 
+  match t with 
+  | Ltype IntType -> "int"
+  | Ltype StringType -> "string"
+  | Ltype BoolType -> "bool"
+  | _ -> failwith "invalid list type"
 
 let print_map m =
 StringMap.iter (fun key value -> 
@@ -86,6 +94,6 @@ StringMap.iter (fun key value ->
   | Int n -> Printf.printf "%s -> %d\n" key n
   | String s -> Printf.printf "%s -> %s\n" key s
   | Bool b -> Printf.printf "%s -> %b\n" key b
-  | List l -> Printf.printf "%s -> " key; print_value_list l
+  | List (t, l) -> Printf.printf "%s -> %s list " key (ltype_to_string t); print_value_list l
   | Closure (_, _) -> Printf.printf "%s -> " key; print_endline (to_string (ValExp value))
 ) m
