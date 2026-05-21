@@ -13,7 +13,8 @@ type environment_t = value_t StringMap.t
 and stmt = 
   | DecStmt of type_t * string * exp
   | AssignStmt of string * exp
-  | IfStmt of exp * stmt list * stmt list
+  | IfElseStmt of exp * stmt list * stmt list
+  | IfStmt of exp * stmt list
   | WhileStmt of exp * stmt list
   | PrintStmt of exp
   | AppendStmt of string * exp
@@ -26,6 +27,7 @@ and exp =
   | BopExp of exp * bop * exp
   | UopExp of uop * exp
   | IndexExp of string * exp
+  | LengthExp of string
 and value_t = 
   | Int of int
   | String of string

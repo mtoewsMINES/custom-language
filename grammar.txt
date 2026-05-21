@@ -6,6 +6,7 @@
     | <ptype> <ident> "->" <exp> ";"
     | <ident> "->" <exp> ";"
     | "if" <exp> <prog> "else" <prog>
+    | "if" <exp> <prog>
     | "print" <exp>
     | <ident> "." "append" "(" <exp> ")"
     | <ident> "." "reverse" "(" ")"
@@ -32,6 +33,7 @@
     | "(" <exp> ")"
     | <ident>
     | <ident> "[" int "]"
+    | <ident> "." "length" "(" ")"
     | "[" <list> "]"
     | <literal>
     | <uop>

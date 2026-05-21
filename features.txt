@@ -1,9 +1,3 @@
-Features:
--function definition and call
-
-
 Known problems
--Issues with passing expressions to lists/functions
--Not parsing empty lists
--Can't have standalone if statements without else
--Need list.length
+-Can't do lists of lists
+-No return statements

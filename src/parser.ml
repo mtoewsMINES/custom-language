@@ -40,12 +40,15 @@ and parse_stmt (tok: string list) : (Util.stmt * string list) =
     (match remtok with 
     | "else"::d ->
       let (p2, remtok) = parse_prog_helper d [] in
-      (IfStmt(cond, p1, p2), remtok)
-    | _ -> failwith "Expected 'else'")
+      (IfElseStmt(cond, p1, p2), remtok)
+    | _ -> (IfStmt(cond, p1), remtok))
   | "while"::d ->
     let (cond, remtok) = parse_exp d in
     let (p, remtok) = parse_prog_helper remtok [] in
     (WhileStmt(cond, p), remtok)
+  | "func"::i::"("::")"::d ->
+    let (p, remtok) = parse_prog_helper d [] in
+    (FuncDefStmt(i, [], p), remtok)
   | "func"::i::"("::d -> 
     let (l, remtok) = parse_param_def d [] in
     (match remtok with 
@@ -53,6 +56,7 @@ and parse_stmt (tok: string list) : (Util.stmt * string list) =
       let (p, remtok) = parse_prog_helper d [] in
       (FuncDefStmt(i,l,p), remtok)
     | _ -> failwith "Expected )")
+  | i::"("::")"::d -> (FuncCallStmt(i, []), d)
   | i::"("::d -> 
     let (params, remtok) = parse_param_call d [] in
     (match remtok with 
@@ -122,11 +126,13 @@ and parse_factor (tok: string list) : (Util.exp * string list) =
     match remtok with 
     | ")"::d -> (ast, d)
     | _ -> failwith "Expected ')'")
+  | "["::"]"::d -> (ValExp(List []), d)
   | "["::d ->
     (let (ast, remtok) = parse_list d [] in
     match remtok with 
-    | "]"::d -> (ValExp (List ast), d)
+    | "]"::d -> (ValExp(List ast), d)
     | _ -> failwith "Expected ']'")
+  | i::"."::"length"::"("::")"::d -> (LengthExp(i), d)
   | i::"["::d ->
     (let (index, remtok) = parse_literal d in
     match remtok with 
@@ -149,7 +155,7 @@ and parse_literal (tok: string list) : (Util.exp * string list) =
     | _ -> failwith ("Invalid Literal: " ^ x))
   | [] -> failwith "Empty literal"
 and parse_list (tok: string list) (acc: exp list): (exp list * string list) = 
-  let (lit, remtok) = parse_literal tok in 
+  let (lit, remtok) = parse_exp tok in 
   (match remtok with 
   | "]"::d -> (lit::acc, remtok)
   | ","::d -> 
@@ -163,7 +169,7 @@ and parse_param_def (tok: string list) (acc: typedef list): (typedef list * stri
     let (l, remtok) = parse_param_def d acc in (tp::l, remtok)
   | _ -> failwith "Invalid parameter assignment (def)")
 and parse_param_call (tok: string list) (acc: exp list): (exp list * string list) = 
-  let (lit, remtok) = parse_literal tok in 
+  let (lit, remtok) = parse_exp tok in 
   (match remtok with 
   | ")"::d -> (lit::acc, remtok)
   | ","::d -> 

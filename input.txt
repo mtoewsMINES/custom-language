@@ -61,13 +61,27 @@
 #myfunc(1, 2, 3);
 #print a;
 
+#myfunc(0, 0 + 1, 0 + 2);
+
 #func print_list(string list l) {
 #    int i -> 0;
-#   while i < 3 {
+#   while i < l.length() {
 #        print l[i];
 #        i -> i + 1;
 #    };
 #};
 
-#string list my_list -> ["Hello", "World", "!"];
+#string list my_list -> ["Hello", "World", "How", "Are", "You?"];
 #print_list(my_list);
+
+#func print_hi() {
+#    print "hi";
+#};
+#print_hi();
+
+#int list elist -> [1 + 2, 3 * 4, 5];
+
+#if 1 < 2 {
+#    print("hi");
+#};
+#print "end";

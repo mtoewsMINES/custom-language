@@ -4,7 +4,7 @@ open Parser
 open Evaluator
 
 let () = 
-  let is_testing = false in
+  let is_testing = true in
 
   let fin = open_in "input.txt" in 
 

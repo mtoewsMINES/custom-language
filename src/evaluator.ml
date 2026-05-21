@@ -42,27 +42,23 @@ let rec eval_exp (env: environment_t) (exp: Util.exp) : Util.value_t =
     | GreaterEq ->
       Bool(val_to_int(eval_exp env e1) >= val_to_int(eval_exp env e2)))
   | UopExp (uop, e) ->
-    (match uop with 
+    (match uop with
     | Not -> Bool(not (val_to_bool (eval_exp env e))))
   | IndexExp (i, index) -> eval_index env (StringMap.find i env) (eval_exp env index)
+  | LengthExp i -> 
+    (match StringMap.find i env with 
+    | List l -> Int(List.length l)
+    | _ -> failwith "Cannot find length of non-list")
 
 let rec eval_list (env: environment_t) (list: exp list) (t: string) : value_t = 
   match list with 
   | [] -> List []
   | e::d -> 
-    (match e with 
-    | ValExp v ->
-      (match v, t with 
-      | (Int _, "int") | (String _, "string") | (Bool _, "bool") ->
-        (match eval_list env d t with List l -> List (e::l) | _ -> failwith "something real bad")
-      | _ -> failwith "Invalid list assignment during eval")
-    | VarExp v ->
-      let result = eval_exp env e in
-      (match result, t with 
-      | (Int _, "int") | (String _, "string") | (Bool _, "bool") ->
-        (match eval_list env d t with List l -> List (ValExp result::l) | _ -> failwith "something real bad")
-      | _ -> failwith "Invalid list declaration during eval")
-    | _ -> failwith "Cannot assign non val/var to list")
+    let v = eval_exp env e in
+    (match t, v with
+    | ("int", Int _) | ("string", String _) | ("bool", Bool _) ->
+      (match eval_list env d t with List l -> List((ValExp v)::l) | _ -> failwith "list evaluated to non-list")
+    | _ -> failwith "Invalid list assignment during eval")
 
 let rec assign_params (env: environment_t) (def: typedef list) (call: exp list) : environment_t = 
   match def, call with 
@@ -123,11 +119,10 @@ let rec eval_stmt (env: environment_t) (stmt: Util.stmt) : environment_t =
       | _ -> failwith "TypeError: Cannot assign list to non-list")
     | List [] -> StringMap.add i (List []) env
     | Closure (_, _) -> failwith "cannot reassign function")
-  | IfStmt (cond, p1, p2) ->
-    (* let env_copy = env in
-    ignore (if (val_to_bool(eval_exp env cond)) then eval_prog env_copy p1 else eval_prog env_copy p2);
-    env *)
+  | IfElseStmt (cond, p1, p2) ->
     if (val_to_bool(eval_exp env cond)) then eval_prog env p1 else eval_prog env p2
+  | IfStmt (cond, p) ->
+    if (val_to_bool(eval_exp env cond)) then eval_prog env p else env
   | PrintStmt e ->
     (match eval_exp env e with 
     | Int n -> print_endline (string_of_int n)
