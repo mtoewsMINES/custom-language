@@ -90,14 +90,7 @@ and parse_stmt (tok: string list) : (Util.stmt * string list) =
     | _ -> failwith ("Invalid Statement: " ^ i))
   | [] -> failwith "Empty Statement"
 and parse_exp (tok: string list) : (Util.exp * string list) =
-  match tok with 
-  | i::"("::")"::d -> (FuncExp(i, []), d)
-  | i::"("::d -> 
-    let (params, remtok) = parse_param_call d [] in
-    (match remtok with 
-    | ")"::d -> (FuncExp(i, params), d)
-    | _ -> failwith "Expected ')'")
-  | _ -> parse_bop tok
+  parse_bop tok
 and parse_bop(tok: string list) : (Util.exp * string list) = 
   let (t, remtok) = parse_term tok in 
     parse_bop_prime t remtok
@@ -166,6 +159,17 @@ and parse_literal (tok: string list) : (Util.exp * string list) =
   | "!"::d -> 
     let (ast, remtok) = parse_exp d in 
     (UopExp(Not, ast), remtok)
+  | i::"("::")"::d -> (FuncExp(i, []), d)
+  | i::"("::d -> 
+    let (params, remtok) = parse_param_call d [] in
+    (match remtok with 
+    | ")"::d -> (FuncExp(i, params), d)
+    | _ -> failwith "Expected ')'")
+  | "["::d ->
+    let (l, remtok) = parse_list d [] in 
+    (match remtok with 
+    | "]"::d -> (ValExp(List(Ltype IntType, l)), d)
+    | _ -> failwith "Expected ']'")
   | x::d ->
     (match x.[0] with 
     | 'a'..'z' | 'A'..'Z' -> (VarExp(x), d)

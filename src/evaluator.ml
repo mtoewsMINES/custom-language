@@ -81,7 +81,7 @@ and eval_exp (env: environment_t) (exp: Util.exp) : Util.value_t =
 
 and eval_list (env: environment_t) (list: exp list) (t: string) : value_t = 
   match list with 
-  | [] -> List (Ltype (match t with | "int" -> IntType | "string" -> StringType | "Bool" -> BoolType | _ -> failwith "invalid type for list"), [])
+  | [] -> List (Ltype (match t with | "int" -> IntType | "string" -> StringType | "bool" -> BoolType | _ -> failwith ("invalid type for list: " ^ t)), [])
   | e::d -> 
     let v = eval_exp env e in
     (match t, v with
@@ -133,12 +133,8 @@ and eval_stmt (env: environment_t) (stmt: Util.stmt) : result =
   | IfStmt (cond, p) ->
     if (val_to_bool(eval_exp env cond)) then eval_prog env p else Envir env
   | PrintStmt e ->
-    (match eval_exp env e with 
-    | Int n -> print_endline (string_of_int n)
-    | String s -> print_endline s
-    | Bool b -> print_endline (string_of_bool b)
-    | List (t, l) -> print_value_list l
-    | Closure (_, _) -> failwith "cannot print closure");
+    (let evaluated = eval_exp env e in 
+    print_endline(to_string(ValExp evaluated)));
     Envir env
   | AppendStmt (i, e) ->
     (match StringMap.find i env with

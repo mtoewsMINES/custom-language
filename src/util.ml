@@ -58,16 +58,6 @@ let val_to_list (v: value_t) : exp list =
   | _ -> failwith "Invalid input to val_to_list"
 
 (*Helper functions*)
-let to_string (e: exp) : string = 
-  match e with 
-  | ValExp v ->
-    (match v with 
-    | Int n -> string_of_int n
-    | String s -> s
-    | Bool b -> string_of_bool b
-    | List (t, l) -> "to_string (list) not implemented"
-    | Closure (_, _) -> "to_string (closure) not implemented")
-  | _ -> "some problem idk"
 
 let rec print_list l = 
   match l with 
@@ -75,16 +65,24 @@ let rec print_list l =
   | a::[] -> print_string ((a)^"::[]\n");
   | a::d -> print_string ((a)^"::"); print_list d
 
-let print_value_list l = 
-  let rec h l = 
+let rec string_value_list l = 
+  let rec h l acc = 
     match l with 
-    | [] -> ()
-    | a::[] -> print_string ((to_string a));
-    | a::d -> print_string ((to_string a)^", "); h d
+    | [] -> ""
+    | a::[] -> (to_string a)
+    | a::d -> (to_string a)^", "^(h d acc)
   in
-    print_string "[";
-    h l;
-    print_string "]\n"
+    "[" ^ (h l "") ^ "]"
+and to_string (e: exp) : string = 
+  match e with 
+  | ValExp v ->
+    (match v with 
+    | Int n -> string_of_int n
+    | String s -> s
+    | Bool b -> string_of_bool b
+    | List (t, l) -> string_value_list l
+    | Closure (_, _) -> "to_string (closure) not implemented")
+  | _ -> "some problem idk"
 
 let ltype_to_string t = 
   match t with 
@@ -99,6 +97,6 @@ StringMap.iter (fun key value ->
   | Int n -> Printf.printf "%s -> %d\n" key n
   | String s -> Printf.printf "%s -> %s\n" key s
   | Bool b -> Printf.printf "%s -> %b\n" key b
-  | List (t, l) -> Printf.printf "%s -> %s list " key (ltype_to_string t); print_value_list l
+  | List (t, l) -> Printf.printf "%s -> %s list %s" key (ltype_to_string t) (string_value_list l)
   | Closure (_, _) -> Printf.printf "%s -> " key; print_endline (to_string (ValExp value))
 ) m
