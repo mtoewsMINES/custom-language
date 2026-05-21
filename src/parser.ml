@@ -18,7 +18,8 @@ let rec parse_prog_helper (tok: string list) (stmt_list: stmt list) : (Util.stmt
     | ";"::d -> let (l, remtok) = parse_prog_helper d (stmt::stmt_list) in (l, remtok)
     | _ -> failwith "Expected ';'")
 and parse_stmt (tok: string list) : (Util.stmt * string list) =
-  match tok with 
+  match tok with
+  | "return"::d -> let (exp, remtok) = parse_exp d in (ReturnStmt exp, remtok)
   | "print"::d -> let (exp, remtok) = parse_exp d in (PrintStmt(exp), remtok)
   | t::i::"->"::d ->
     (match t with 
@@ -26,9 +27,6 @@ and parse_stmt (tok: string list) : (Util.stmt * string list) =
     | "string" -> let (exp, remtok) = parse_exp d in (DecStmt(Ptype StringType, i, exp), remtok)
     | "bool" -> let (exp, remtok) = parse_exp d in (DecStmt(Ptype BoolType, i, exp), remtok)
     | _ -> failwith ("Invalid type" ^ t))
-
-
-    
   | t::"list"::i::"->"::"["::"]"::d ->
     (match t with 
     | "int" -> (DecStmt(Ltype IntType, i, ValExp(List(Ltype IntType, []))), d)
@@ -92,7 +90,14 @@ and parse_stmt (tok: string list) : (Util.stmt * string list) =
     | _ -> failwith ("Invalid Statement: " ^ i))
   | [] -> failwith "Empty Statement"
 and parse_exp (tok: string list) : (Util.exp * string list) =
-  parse_bop tok
+  match tok with 
+  | i::"("::")"::d -> (FuncExp(i, []), d)
+  | i::"("::d -> 
+    let (params, remtok) = parse_param_call d [] in
+    (match remtok with 
+    | ")"::d -> (FuncExp(i, params), d)
+    | _ -> failwith "Expected ')'")
+  | _ -> parse_bop tok
 and parse_bop(tok: string list) : (Util.exp * string list) = 
   let (t, remtok) = parse_term tok in 
     parse_bop_prime t remtok

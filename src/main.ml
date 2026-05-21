@@ -13,5 +13,8 @@ let () =
 
   let stmt_list = Parser.parse_prog tokens in 
       let env = StringMap.empty in
-      let new_env = Evaluator.eval_prog env stmt_list in
-      if is_testing then (Util.print_map new_env) else ()
+      let res = Evaluator.eval_prog env stmt_list in
+      match res with 
+      | Envir e ->
+        if is_testing then (Util.print_map e) else ()
+      | _ -> failwith "Can't end with return"

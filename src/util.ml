@@ -21,6 +21,7 @@ and stmt =
   | ReverseStmt of string
   | FuncDefStmt of string * typedef list * stmt list
   | FuncCallStmt of string * exp list
+  | ReturnStmt of exp
 and exp = 
   | VarExp of string
   | ValExp of value_t
@@ -28,12 +29,16 @@ and exp =
   | UopExp of uop * exp
   | IndexExp of string * exp
   | LengthExp of string
+  | FuncExp of string * exp list
 and value_t = 
   | Int of int
   | String of string
   | Bool of bool
   | List of type_t * exp list
   | Closure of typedef list * stmt list
+type result = 
+  | Return of exp
+  | Envir of environment_t
 
 let val_to_int (v: value_t) : int = 
   match v with 

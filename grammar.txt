@@ -11,8 +11,9 @@
     | <ident> "." "append" "(" <exp> ")"
     | <ident> "." "reverse" "(" ")"
     | "while" <exp> <prog>
-    | "func <ident> "(" <paramdef> ")" <prog>
+    | "func <ident> "(" <param> ")" <prog>
     | <ident> "(" <list> ")"
+    | <exp>
 <exp> ->
     | <bop>
 <bop> ->
