@@ -9,9 +9,11 @@
 #bool d -> !(true && false);
 
 #if false {
-#    int c -> 9;
+#    print "if case";
+#    c -> 9;
 #} else {
-#    int c -> 10;
+#    print "else case";
+#    c -> 10;
 #};
 
 #print d;
@@ -33,5 +35,13 @@
 #bool list blist -> [true, false, false, true];
 
 #bool equal_test -> 5 = 5;
-string s -> "Hello" + " " + "World!";
-string char -> s[2];
+#string s -> "Hello" + " " + "World!";
+#string char -> s[2];
+
+#bool comp -> 4 >= 4;
+
+int n -> 0;
+while n < 5 {
+    print n;
+    n -> n + 1;
+};

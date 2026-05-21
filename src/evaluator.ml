@@ -32,7 +32,15 @@ let rec eval_exp (env: environment_t) (exp: Util.exp) : Util.value_t =
       | (Int n1, Int n2) -> Bool(n1 = n2)
       | (String s1, String s2) -> Bool(s1 = s2)
       | (Bool b1, Bool b2) -> Bool(b1 = b2)
-      | _ -> failwith "Invalid comparison"))
+      | _ -> failwith "Invalid comparison")
+    | Less ->
+      Bool(val_to_int(eval_exp env e1) < val_to_int(eval_exp env e2))
+    | Greater ->
+      Bool(val_to_int(eval_exp env e1) > val_to_int(eval_exp env e2))
+    | LessEq ->
+      Bool(val_to_int(eval_exp env e1) <= val_to_int(eval_exp env e2))
+    | GreaterEq ->
+      Bool(val_to_int(eval_exp env e1) >= val_to_int(eval_exp env e2)))
   | UopExp (uop, e) ->
     (match uop with 
     | Not -> Bool(not (val_to_bool (eval_exp env e))))
@@ -96,9 +104,10 @@ let rec eval_stmt (env: environment_t) (stmt: Util.stmt) : environment_t =
       | _ -> failwith "TypeError: Cannot assign list to non-list")
     | List [] -> StringMap.add i (List []) env)
   | IfStmt (cond, p1, p2) ->
-    let env_copy = env in
+    (* let env_copy = env in
     ignore (if (val_to_bool(eval_exp env cond)) then eval_prog env_copy p1 else eval_prog env_copy p2);
-    env
+    env *)
+    if (val_to_bool(eval_exp env cond)) then eval_prog env p1 else eval_prog env p2
   | PrintStmt e ->
     (match eval_exp env e with 
     | Int n -> print_endline (string_of_int n)
@@ -119,6 +128,15 @@ let rec eval_stmt (env: environment_t) (stmt: Util.stmt) : environment_t =
     (match StringMap.find i env with 
     | List l -> StringMap.add i (List (List.rev l)) env
     | _ -> failwith "Cannot reverse a non-list")
+  | WhileStmt (e, p) ->
+      (match eval_exp env e with 
+      | Bool _ -> 
+          let new_env = ref env in
+          while val_to_bool (eval_exp !new_env e) do
+            new_env := (eval_prog !new_env p);
+          done;
+          !new_env
+      | _ -> failwith "Invalid while condition")
 
 
 and eval_prog (env: environment_t) (stmts: Util.stmt list) : environment_t =

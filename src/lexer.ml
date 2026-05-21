@@ -80,6 +80,16 @@ let lex_file (f: in_channel) : (string list) =
         | '>' -> tokens := "->"::!tokens
         | _ -> tokens := "-"::!tokens; 
                In_channel.seek f (Int64.sub (In_channel.pos f) 1L))
+      | '<' ->
+        (match input_char f with 
+        | '=' -> tokens := "<="::!tokens
+        | _ -> tokens := "<"::!tokens;
+          In_channel.seek f (Int64.sub (In_channel.pos f) 1L))
+      | '>' ->
+        (match input_char f with 
+        | '=' -> tokens := ">="::!tokens
+        | _ -> tokens := ">"::!tokens;
+          In_channel.seek f (Int64.sub (In_channel.pos f) 1L))
       | 'a'..'z' | 'A'..'Z' -> tokens := ((String.make 1 next_char) ^ (lex_alphanumeric f))::!tokens
       | '0'..'9' -> tokens := ((String.make 1 next_char) ^ (lex_number f))::!tokens
       | ' ' | '\n' | '\r' | '\t' -> () (*ignore whitespace*)

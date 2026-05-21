@@ -8,7 +8,9 @@ let rec parse_prog_helper (tok: string list) (stmt_list: stmt list) : (Util.stmt
     (match remtok with 
     | ";"::"}"::[] -> (stmt::stmt_list, [])
     | ";"::"}"::d -> (stmt::stmt_list, d)
+    | ";"::d -> parse_prog_helper d (stmt_list @ [stmt])
     | _ -> failwith "Expected ';}'")
+  | "}"::d -> (stmt_list, d)
   | _ ->
     let (stmt, remtok) = parse_stmt tok in
     (match remtok with 
@@ -40,6 +42,10 @@ and parse_stmt (tok: string list) : (Util.stmt * string list) =
       let (p2, remtok) = parse_prog_helper d [] in
       (IfStmt(cond, p1, p2), remtok)
     | _ -> failwith "Expected 'else'")
+  | "while"::d ->
+    let (cond, remtok) = parse_exp d in
+    let (p, remtok) = parse_prog_helper remtok [] in
+    (WhileStmt(cond, p), remtok)
   | i::d -> 
     (match d with 
     | "."::"append"::"("::d ->
@@ -66,6 +72,18 @@ and parse_bop_prime (exp: Util.exp) (tok: string list) : (Util.exp * string list
   | "||"::d ->
     let (t, remtok) = parse_term d in 
     parse_bop_prime (BopExp(exp, Or, t)) remtok
+  | "<"::d -> 
+    let (t, remtok) = parse_term d in
+    parse_bop_prime (BopExp(exp, Less, t)) remtok
+  | ">"::d -> 
+    let (t, remtok) = parse_term d in
+    parse_bop_prime (BopExp(exp, Greater, t)) remtok
+  | "<="::d -> 
+    let (t, remtok) = parse_term d in
+    parse_bop_prime (BopExp(exp, LessEq, t)) remtok
+  | ">="::d -> 
+    let (t, remtok) = parse_term d in
+    parse_bop_prime (BopExp(exp, GreaterEq, t)) remtok
   | _ -> (exp, tok)   
 and parse_term (tok: string list) : (Util.exp * string list) = 
   let (f, remtok) = parse_factor tok in

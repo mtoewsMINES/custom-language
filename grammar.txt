@@ -9,6 +9,7 @@
     | "print" <exp>
     | <ident> "." "append" "(" <exp> ")"
     | <ident> "." "reverse" "(" ")"
+    | "while" <exp> <prog>
 <exp> ->
     | <bop>
 <bop> ->
