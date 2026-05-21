@@ -7,6 +7,7 @@ type ptype = IntType | StringType | BoolType
 type type_t = 
   | Ptype of ptype
   | Ltype of ptype
+type typedef = TypeDef of ptype * string
 
 type environment_t = value_t StringMap.t
 and stmt = 
@@ -17,6 +18,7 @@ and stmt =
   | PrintStmt of exp
   | AppendStmt of string * exp
   | ReverseStmt of string
+  | FuncDefStmt of string * exp list * stmt list
 and exp = 
   | VarExp of string
   | ValExp of value_t

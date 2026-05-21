@@ -6,11 +6,11 @@ let rec parse_prog_helper (tok: string list) (stmt_list: stmt list) : (Util.stmt
   | "{"::d -> 
     let (stmt, remtok) = parse_stmt d in
     (match remtok with 
-    | ";"::"}"::[] -> (stmt::stmt_list, [])
-    | ";"::"}"::d -> (stmt::stmt_list, d)
-    | ";"::d -> parse_prog_helper d (stmt_list @ [stmt])
+    | ";"::"}"::[] -> (List.rev (stmt::stmt_list), [])
+    | ";"::"}"::d -> (List.rev (stmt::stmt_list), d)
+    | ";"::d -> parse_prog_helper d (stmt::stmt_list)
     | _ -> failwith "Expected ';}'")
-  | "}"::d -> (stmt_list, d)
+  | "}"::d -> (List.rev stmt_list, d)
   | _ ->
     let (stmt, remtok) = parse_stmt tok in
     (match remtok with 
@@ -46,6 +46,13 @@ and parse_stmt (tok: string list) : (Util.stmt * string list) =
     let (cond, remtok) = parse_exp d in
     let (p, remtok) = parse_prog_helper remtok [] in
     (WhileStmt(cond, p), remtok)
+  | "func"::i::"("::d -> failwith "funcdef not implemented"
+    (* let (l, remtok) = parse_params d [] in
+    (match remtok with 
+    | ")"::d ->
+      let (p, remtok) = parse_prog_helper d [] in
+      (FuncDefStmt(i,l,p), remtok)
+    | _ -> failwith "Expected )") *)
   | i::d -> 
     (match d with 
     | "."::"append"::"("::d ->
@@ -143,6 +150,21 @@ and parse_list (tok: string list) (acc: exp list): (exp list * string list) =
   | ","::d -> 
     let (l, remtok) = parse_list d acc in (lit::l, remtok)
   | _ -> failwith "Invalid list assignment")
+(* and parse_params (tok: string list) (acc: exp list): (exp list * string list) = 
+  let (lit, remtok) = parse_type tok in 
+  (match remtok with 
+  | ")"::d -> (lit::acc, remtok)
+  | ","::d -> 
+    let (l, remtok) = parse_params d acc in (lit::l, remtok)
+  | _ -> failwith "Invalid parameter assignment")
+and parse_type (tok: string list) : ((ptype * string) * string list) = 
+  match tok with 
+  | "int"::i::d -> 
+    (TypeDef(IntType i), d)
+  | "string"::i::d ->
+    (TypeDef(StringType i), d)
+  | "bool"::i::d ->
+    (TypeDef(BoolType i), d) *)
 let parse_prog (tok: string list) : Util.stmt list = 
   let (stmt_list, remtok) = parse_prog_helper tok [] in
   List.rev stmt_list

@@ -10,6 +10,7 @@
     | <ident> "." "append" "(" <exp> ")"
     | <ident> "." "reverse" "(" ")"
     | "while" <exp> <prog>
+    | "func <ident> "(" <param> ")" <prog>
 <exp> ->
     | <bop>
 <bop> ->
@@ -41,6 +42,10 @@
     | ""
 <literal> ->
     | int | string | bool
+<param> ->
+    | <ptype> <ident> "," <param>
+    | <ptype> <ident>
+    | ""
 
 
 <ptype> -> "int" <adt> | "string" <adt> | "bool" <adt>

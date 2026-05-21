@@ -133,10 +133,11 @@ let rec eval_stmt (env: environment_t) (stmt: Util.stmt) : environment_t =
       | Bool _ -> 
           let new_env = ref env in
           while val_to_bool (eval_exp !new_env e) do
-            new_env := (eval_prog !new_env p);
+            new_env := (eval_prog !new_env p)
           done;
           !new_env
       | _ -> failwith "Invalid while condition")
+  | FuncDefStmt (i, param, prog) -> failwith "FuncDef not implemented"
 
 
 and eval_prog (env: environment_t) (stmts: Util.stmt list) : environment_t =

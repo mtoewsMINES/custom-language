@@ -4,17 +4,20 @@
 #string s -> "Hello World";
 
 #b -> true;
-#int c -> 8;
+int c -> 8;
 
 #bool d -> !(true && false);
 
+#print "begin";
 #if false {
 #    print "if case";
 #    c -> 9;
 #} else {
 #    print "else case";
 #    c -> 10;
+#    print "else case done";
 #};
+#print "outside";
 
 #print d;
 #print "newline time! \n";
@@ -40,8 +43,16 @@
 
 #bool comp -> 4 >= 4;
 
-int n -> 0;
-while n < 5 {
-    print n;
-    n -> n + 1;
+#print "start";
+#int n -> 0;
+#while n < 5 {
+#    print n;
+#    n -> n + 1;
+#};
+#print "end";
+
+func myfunc(int a, int b, int c) {
+    print a;
+    print b;
+    print b;
 };
