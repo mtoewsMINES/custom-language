@@ -1,5 +1,6 @@
 (*Parser*)
 open Util
+open Testing
 
 let rec parse_prog_helper (tok: string list) (stmt_list: stmt list) : (Util.stmt list * string list) = 
   match tok with 
@@ -26,7 +27,7 @@ and parse_stmt (tok: string list) : (Util.stmt * string list) =
     | "int" -> let (exp, remtok) = parse_exp d in (DecStmt(Ptype IntType, i, exp), remtok)
     | "string" -> let (exp, remtok) = parse_exp d in (DecStmt(Ptype StringType, i, exp), remtok)
     | "bool" -> let (exp, remtok) = parse_exp d in (DecStmt(Ptype BoolType, i, exp), remtok)
-    | _ -> failwith ("Invalid type" ^ t))
+    | _ -> failwith ("Invalid type " ^ t))
   | t::"list"::i::"->"::"["::"]"::d ->
     (match t with 
     | "int" -> (DecStmt(Ltype IntType, i, ValExp(List(Ltype IntType, []))), d)
@@ -211,7 +212,18 @@ and parse_type (tok: string list) : (typedef * string list) =
     (TypeDef(Ptype StringType, i), d)
   | "bool"::i::d ->
     (TypeDef(Ptype BoolType, i), d)
-  | _ -> failwith "Invalid parameter type"
+  | t::d -> failwith ("Invalid parameter type " ^ t)
+  | [] -> failwith "Empty type"
 let parse_prog (tok: string list) : Util.stmt list = 
   let (stmt_list, remtok) = parse_prog_helper tok [] in
   List.rev stmt_list
+
+
+(*Testing*)
+
+
+let test_parser = (fun () ->
+    print_endline "RUNNING PARSER TESTS";
+    
+    print_endline ""
+  )

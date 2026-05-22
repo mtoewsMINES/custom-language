@@ -1,55 +1,54 @@
 # # #the following is a test
+
+#basic assignment
 int x -> 5 + 5;
 bool b -> false;
 string s -> "Hello World";
-
 b -> true;
 int c -> 8;
 bool d -> !(true && false);
 
-print "begin";
+#if statements & program ordering
 if false {
-    print "if case";
     c -> 9;
-} else {
-    print "else case";
     c -> 10;
-    print "else case done";
+} else {
+    c -> 11;
+    c -> 12;
 };
-print "outside";
+if true {
+    c -> 9;
+    c -> 10;
+} else {
+    c -> 11;
+    c -> 12;
+};
 
-print d;
-print "newline time! \n";
-print "hello world";
-
+#simple list assignment & operators
 int list l -> [x, 2, 3];
-l.reverse();
-l.append(5);
-
-int list l2 -> [4, 5, 6];
-l -> l + l2;
-print l;
-l -> [1, 2, 3, 4];
-print l;
-int t -> l[2];
-
 string list slist -> ["a", "b", "c"];
 bool list blist -> [true, false, false, true];
+l.reverse();
+l.append(5);
+int list l2 -> [4, 5, 6];
+l -> l + l2;
+int t -> l[2];
 
-bool equal_test -> 5 = 5;
+#string operations
 string s -> "Hello" + " " + "World!";
 string char -> s[2];
 
+#comparisions
 bool comp -> 4 >= 4;
+bool equal_test -> 5 = 5;
 
-print "start";
+#simple loop
 int n -> 0;
 while n < 5 {
-    print n;
     n -> n + 1;
 };
-print "end";
 
+#simple function
 int a -> 6;
 func myfunc(int a, int b, int c) {
     a -> a + 1;
@@ -60,8 +59,7 @@ func myfunc(int a, int b, int c) {
 myfunc(1, 2, 3);
 print a;
 
-myfunc(0, 0 + 1, 0 + 2);
-
+#function with lists/expressions
 func print_list(string list l) {
     int i -> 0;
    while i < l.length() {
@@ -69,11 +67,12 @@ func print_list(string list l) {
         i -> i + 1;
     };
 };
-
 string list my_list -> ["Hello", "World", "How", "Are", "You?"];
 print_list(my_list);
 print_list(["Hello", "World", "I'm", "Doing", "Well"]);
+myfunc(0, 0 + 1, 0 + 2);
 
+#functions with or without return value
 func print_hi() {
     print "hi";
     return 0;
@@ -81,18 +80,14 @@ func print_hi() {
 print_hi();
 int a -> print_hi();
 
-int list elist -> [1 + 2, 3 * 4, 5];
-
-if 1 < 2 {
-    print("hi");
-};
-print "end";
-
 int i -> 0;
 func increment(int n) {
     return n + 1;
 };
 i -> increment(i);
+
+#lists of expressions
+int list elist -> [1 + 2, 3 * 4, 5];
 
 
 
