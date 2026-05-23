@@ -169,7 +169,7 @@ and parse_literal (tok: string list) : (Util.exp * string list) =
   | "["::d ->
     let (l, remtok) = parse_list d [] in 
     (match remtok with 
-    | "]"::d -> (ValExp(List(Ltype IntType, l)), d)
+    | "]"::d -> (ValExp(List(Ltype IntType, l)), d) (*Type mismatch sorted out later*)
     | _ -> failwith "Expected ']'")
   | x::d ->
     (match x.[0] with 
@@ -220,10 +220,139 @@ let parse_prog (tok: string list) : Util.stmt list =
 
 
 (*Testing*)
+let basic_assignment_tests = (fun () ->
+  print_endline "--running basic_assignment_tests--";
+  run_test "Declare int" (parse_prog) ["int";"x";"->";"5";"+";"6";";"] 
+    (Value([DecStmt(Ptype IntType, "x", BopExp(ValExp(Int 5), Add, ValExp(Int 6)))]));
+  run_test "Declare bool" (parse_prog) ["bool";"b";"->";"false";";"]
+    (Value([DecStmt(Ptype BoolType, "b", ValExp(Bool false))]));
+  run_test "Declare string" (parse_prog) ["string";"s";"->";"\"";"Hello World";"\"";";"]
+    (Value([DecStmt(Ptype StringType, "s", ValExp(String "Hello World"))]));
+  run_test "Assign int" (parse_prog) ["c";"->";"8";";"]
+    (Value([AssignStmt("c", ValExp(Int 8))]));
+  run_test "Assign bool" (parse_prog) ["b";"->";"true";";"]
+    (Value([AssignStmt("b", ValExp(Bool true))]));
+  run_test "Assign string" (parse_prog) ["s";"->";"\"";"dlroW olleH";"\"";";"]
+    (Value([AssignStmt("s", ValExp(String "dlroW olleH"))]));
+  )
 
+let expression_assignment_tests = (fun () ->
+  print_endline "--running expression_assignment_tests--";
+  run_test "Bool exp" (parse_prog) ["bool";"d";"->";"!";"(";"true";"&&";"false";")";";"]
+    (Value([DecStmt(Ptype BoolType, "d", UopExp(Not, BopExp(ValExp(Bool true), And, ValExp(Bool false))))]));
+  run_test "Int exp" (parse_prog) ["x";"->";"1";"+";"2";"*";"3";";"]
+    (Value([AssignStmt("x", BopExp(ValExp(Int 1), Add, BopExp(ValExp(Int 2), Mul, ValExp(Int 3))))]));
+  run_test "String exp" (parse_prog) ["s";"->";"\"";"Hello";"\"";"+";"\"";"World";"\"";";"]
+    (Value([AssignStmt("s", BopExp(ValExp(String "Hello"), Add, ValExp(String "World")))]));
+  run_test "List exp" (parse_prog) ["int";"list";"elist";"->";"[";"1";"+";"2";",";"3";"*";"4";",";"5";"]";";"]
+    (Value([DecStmt(Ltype IntType, "elist", ValExp(List(Ltype IntType, [BopExp(ValExp(Int 1), Add, ValExp(Int 2));BopExp(ValExp(Int 3), Mul, ValExp(Int 4));ValExp(Int 5)])))]));
+  )
+
+let if_prog_ordering_tests = (fun () ->
+  print_endline "--running if_prog_ordering_tests--";
+  run_test "If literal" (parse_prog) ["if";"false";"{";"c";"->";"9";";";"c";"->";"10";";";"}";"else";"{";"c";"->";"11";";";"c";"->";"12";";";"}";";"]
+    (Value([IfElseStmt(ValExp(Bool false), 
+      [AssignStmt("c", ValExp(Int 9)); AssignStmt("c", ValExp(Int 10))], 
+      [AssignStmt("c", ValExp(Int 11)); AssignStmt("c", ValExp(Int 12))])]));
+  run_test "If exp" (parse_prog) ["if";"1";"<";"2";"{";"c";"->";"9";";";"c";"->";"10";";";"}";"else";"{";"c";"->";"11";";";"c";"->";"12";";";"}";";"]
+    (Value([IfElseStmt(BopExp(ValExp(Int 1), Less, ValExp(Int 2)), 
+      [AssignStmt("c", ValExp(Int 9)); AssignStmt("c", ValExp(Int 10))], 
+      [AssignStmt("c", ValExp(Int 11)); AssignStmt("c", ValExp(Int 12))])]));
+  )
+
+let simple_list_tests = (fun () ->
+  print_endline "--running simple_list_tests--";
+  run_test "Declare int list" (parse_prog) ["int";"list";"l";"->";"[";"x";",";"2";",";"3";"]";";"]
+    (Value([DecStmt(Ltype IntType, "l", ValExp(List(Ltype IntType, [VarExp "x";ValExp(Int 2);ValExp(Int 3)])))]));
+  run_test "Declare string list" (parse_prog) ["string";"list";"slist";"->";"[";"\"";"a";"\"";",";"\"";"b";"\"";",";"\"";"c";"\"";"]";";"]
+    (Value([DecStmt(Ltype StringType, "slist", ValExp(List(Ltype StringType, [ValExp(String "a");ValExp(String "b");ValExp(String "c")])))]));
+  run_test "Declare bool list" (parse_prog) ["bool";"list";"blist";"->";"[";"true";",";"false";",";"false";",";"true";"]";";"]
+    (Value([DecStmt(Ltype BoolType, "blist", ValExp(List(Ltype BoolType, [ValExp(Bool true);ValExp(Bool false);ValExp(Bool false);ValExp(Bool true)])))]));
+  run_test "Reverse list" (parse_prog) ["l";".";"reverse";"(";")";";"]
+    (Value([ReverseStmt("l")]));
+  run_test "Append list" (parse_prog) ["l";".";"append";"(";"5";")";";"]
+    (Value([AppendStmt("l", ValExp(Int 5))]));
+  run_test "Extend list" (parse_prog) ["l";"->";"l";"+";"l2";";"]
+    (Value([AssignStmt("l", BopExp(VarExp "l", Add, VarExp "l2"))]));
+  run_test "Index list" (parse_prog) ["int";"t";"->";"l";"[";"2";"]";";"]
+    (Value([DecStmt(Ptype IntType, "t", IndexExp("l", ValExp(Int 2)))]));
+  run_test "Index string" (parse_prog) ["string";"c";"->";"s";"[";"2";"]";";"]
+    (Value([DecStmt(Ptype StringType, "c", IndexExp("s", ValExp(Int 2)))]));
+  )
+
+let simple_comparison_tests = (fun() ->
+  print_endline "--running simple_comparison_tests--";
+  run_test "Greater equal" (parse_prog) ["bool";"comp";"->";"5";">=";"4";";"]
+    (Value([DecStmt(Ptype BoolType, "comp", BopExp(ValExp(Int 5), GreaterEq, ValExp(Int 4)))]));
+  run_test "Equal" (parse_prog) ["bool";"eq";"->";"5";"=";"5";";"]
+    (Value([DecStmt(Ptype BoolType, "eq", BopExp(ValExp(Int 5), Equal, ValExp(Int 5)))]));
+  )
+
+let simple_loop_tests = (fun() ->
+  print_endline "--running simple_loop_tests--";
+  run_test "Counter loop" (parse_prog) ["int";"n";"->";"0";";";"while";"n";"<";"5";"{";"print";"(";"n";")";";";"n";"->";"n";"+";"1";";";"}";";"]
+    (Value([
+      DecStmt(Ptype IntType, "n", ValExp(Int 0));
+      WhileStmt(BopExp(VarExp "n", Less, ValExp(Int 5)), [
+        PrintStmt(VarExp "n");
+        AssignStmt("n", BopExp(VarExp "n", Add, ValExp(Int 1)))
+      ])
+    ]));
+  )
+
+let simple_function_tests = (fun() -> 
+  print_endline "--running function_tests--";
+  run_test "Function definition" (parse_prog) ["func";"myfunc";"(";"int";"a";",";"int";"b";",";"int";"c";")";"{";"a";"->";"a";"+";"1";";";"print";"a";";";"print";"b";";";"print";"c";";";"}";";"]
+    (Value([FuncDefStmt("myfunc", [TypeDef(Ptype IntType, "a");TypeDef(Ptype IntType, "b");TypeDef(Ptype IntType, "c")], [
+      AssignStmt("a", BopExp(VarExp "a", Add, ValExp(Int 1)));
+      PrintStmt(VarExp "a");
+      PrintStmt(VarExp "b");
+      PrintStmt(VarExp "c");
+    ])]));
+  run_test "Function call" (parse_prog) ["myfunc";"(";"1";",";"2";",";"3";")";";"]
+    (Value([FuncCallStmt("myfunc", [ValExp(Int 1);ValExp(Int 2);ValExp(Int 3)])]));
+  )
+
+let complex_function_tests = (fun() ->
+  print_endline "--running_complex_function_tests";
+  run_test "While body" (parse_prog) ["func";"print_list";"(";"string";"list";"l";")";"{";"int";"i";"->";"0";";";"while";"i";"<";"l";".";"length";"(";")";"{";"print";"l";"[";"i";"]";";";"i";"->";"i";"+";"1";";";"}";";";"}";";"]
+    (Value([FuncDefStmt("print_list", [TypeDef(Ltype StringType, "l")], [
+      DecStmt(Ptype IntType, "i", ValExp(Int 0));
+      WhileStmt(BopExp(VarExp "i", Less, LengthExp("l")), [
+        PrintStmt(IndexExp("l", VarExp "i"));
+        AssignStmt("i", BopExp(VarExp "i", Add, ValExp(Int 1)))
+      ])
+    ])]));
+  run_test "Pass exp" (parse_prog) ["print_list";"(";"[";"\"";"Hello";"\"";",";"\"";"World";"\"";",";"\"";"!";"\"";"]";")";";"]
+    (Value([FuncCallStmt("print_list", [ValExp(List(Ltype IntType, [ValExp(String "Hello");ValExp(String "World");ValExp(String "!")]))])]));
+  run_test "Simple return statement (optional param)" (parse_prog) ["func";"print_hi";"(";")";"{";"print";"\"";"hi";"\"";";";"return";"0";";";"}";";";"print_hi";"(";")";";";"int";"a";"->";"print_hi";"(";")";";"]
+    (Value([
+      FuncDefStmt("print_hi", [], [
+        PrintStmt(ValExp(String "hi"));
+        ReturnStmt(ValExp(Int 0))
+      ]);
+      FuncCallStmt("print_hi", []);
+      DecStmt(Ptype IntType, "a", FuncExp("print_hi", []))
+    ]));
+  run_test "Simple return statement" (parse_prog) ["int";"i";"->";"0";";";"func";"increment";"(";"int";"n";")";"{";"return";"n";"+";"1";";";"}";";";"i";"->";"increment";"(";"i";")";";"]
+    (Value([
+      DecStmt(Ptype IntType, "i", ValExp(Int 0));
+      FuncDefStmt("increment", [TypeDef(Ptype IntType, "n")], [
+        ReturnStmt(BopExp(VarExp "n", Add, ValExp(Int 1)))
+      ]);
+      AssignStmt("i", FuncExp("increment", [VarExp "i"]))
+    ]));
+  )
 
 let test_parser = (fun () ->
     print_endline "RUNNING PARSER TESTS";
-    
+    basic_assignment_tests();
+    expression_assignment_tests();
+    if_prog_ordering_tests();
+    simple_list_tests();
+    simple_comparison_tests();
+    simple_loop_tests();
+    simple_function_tests();
+    complex_function_tests();
     print_endline ""
   )

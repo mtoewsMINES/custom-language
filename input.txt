@@ -1,12 +1,17 @@
 # # #the following is a test
 
-#basic assignment
-int x -> 5 + 5;
+#basic dec/assignment
+int x -> 6;
 bool b -> false;
 string s -> "Hello World";
 b -> true;
 int c -> 8;
+s -> "dlroW olleH";
+
+#dec/assignment w/ expressions
 bool d -> !(true && false);
+x -> 1 + 2 * 3;
+s -> "Hello" + "World";
 
 #if statements & program ordering
 if false {
@@ -16,7 +21,7 @@ if false {
     c -> 11;
     c -> 12;
 };
-if true {
+if 1 < 2 {
     c -> 9;
     c -> 10;
 } else {
@@ -34,6 +39,9 @@ int list l2 -> [4, 5, 6];
 l -> l + l2;
 int t -> l[2];
 
+#lists of expressions
+int list elist -> [1 + 2, 3 * 4, 5];
+
 #string operations
 string s -> "Hello" + " " + "World!";
 string char -> s[2];
@@ -45,6 +53,7 @@ bool equal_test -> 5 = 5;
 #simple loop
 int n -> 0;
 while n < 5 {
+    print(n);
     n -> n + 1;
 };
 
@@ -85,9 +94,6 @@ func increment(int n) {
     return n + 1;
 };
 i -> increment(i);
-
-#lists of expressions
-int list elist -> [1 + 2, 3 * 4, 5];
 
 
 
