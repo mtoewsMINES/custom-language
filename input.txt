@@ -1,4 +1,4 @@
-# # #the following is a test
+#the following is a test
 
 #basic dec/assignment
 int x -> 6;
