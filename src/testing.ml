@@ -50,6 +50,13 @@ let run_test (name: string) (f: 'a -> 'b) (params: 'a) (expected: 'b outcome): s
       else
         (print_endline "\027[31mFAIL\027[0m";
         print_string "\027[0m\027[0m")
+    | Not_found, Error s -> 
+      if s = "Not_found" then 
+        (print_endline "\027[32mPASS\027[32m";
+        print_string "\027[0m\027[0m";)
+      else
+        (print_endline "\027[31mFAIL\027[0m";
+        print_string "\027[0m\027[0m")
     | _ -> print_endline "\027[0mTry Catch failed (Error)\027[0m");
 
   let s = In_channel.with_open_text "temp.txt" In_channel.input_all in

@@ -173,7 +173,7 @@ and eval_stmt (env: environment_t) (stmt: Util.stmt) : result =
       let new_env = assign_params env param_def param_call in
       ignore(eval_prog new_env prog);
       Envir(env)
-    | _ -> failwith "Can't call non-function")
+    | _ -> failwith "Cannot call non-function")
   | ReturnStmt e -> Return(ValExp(eval_exp env e))
 
 and eval_prog (env: environment_t) (stmts: Util.stmt list) : result =
@@ -387,6 +387,50 @@ let complex_function_tests = (fun() ->
   
   )
 
+let error_handling_tests = (fun() ->
+  print_endline "--running error_handling_tests--";
+  (*Setup*)
+  let env = StringMap.empty in
+  let preset_env = StringMap.add "i" (Int 0) StringMap.empty in 
+  let preset_env = StringMap.add "increment" (Closure([TypeDef(Ptype IntType, "n")], [
+    ReturnStmt(BopExp(VarExp "n", Add, ValExp(Int 1)))
+  ])) preset_env in
+
+  ignore(run_test "Assignment not found" (eval_test_helper) (env, [AssignStmt("z", ValExp(Int 5))])
+    (Error "Not_found"));
+  ignore(run_test "Function not found" (eval_test_helper) (env, [FuncCallStmt("z", [])])
+    (Error "Not_found"));
+  ignore(run_test "Type mismatch declaration" (eval_test_helper) (env, [DecStmt(Ptype IntType, "z", ValExp(String "hello"))])
+    (Error "TypeError: Declared int -> non-int"));
+  ignore(run_test "Type mismatch bop" (eval_test_helper) (env, [DecStmt(Ptype IntType, "z", BopExp(ValExp(Bool true), And, ValExp(Int 1)))])
+    (Error "Invalid input to val_to_bool"));
+  ignore(run_test "Type mismatch list" (eval_test_helper) (env, [DecStmt(Ltype IntType, "z", ValExp(List(Ltype IntType, [])));AssignStmt("z", ValExp(List(Ltype IntType, [ValExp(String "a");ValExp(String "b");ValExp(String "c")])))])
+    (Error "Invalid list assignment during eval"));
+  ignore(run_test "Type mismatch list []" (eval_test_helper) (env, [
+      DecStmt(Ltype IntType, "z", ValExp(List(Ltype IntType, [ValExp(Int 1);ValExp(Int 2);ValExp(Int 3)])));
+      DecStmt(Ptype IntType, "c", IndexExp("z", ValExp(String "a")))])
+    (Error "Cannot eval index on non-list/non-string"));
+  ignore(run_test "Invalid parameter" (eval_test_helper) (preset_env, [FuncCallStmt("increment", [ValExp(String "number")])])
+    (Error "Invalid parameter"));
+  ignore(run_test "Invalid append" (eval_test_helper) (env, [
+    DecStmt(Ltype IntType, "z1", ValExp(List(Ltype IntType, [])));
+    DecStmt(Ltype StringType, "z2", ValExp(List(Ltype StringType, [])));
+    AppendStmt("z1", VarExp "z2");
+  ])
+    (Error "TypeError: Invalid list append during eval"));
+  
+  ignore(run_test "Call list" (eval_test_helper) (env, [
+      DecStmt(Ltype IntType, "z", ValExp(List(Ltype IntType, [])));
+      FuncCallStmt("z", [])])
+    (Error "Cannot call non-function"));
+  )
+
+
+(* 
+int list z1 -> []; string list z2 -> []; z1 -> z1 + z2; #can't append lists of different types
+int list z -> [1,2,3]; z(); #can't call non-function 
+*)
+
 let test_evaluator = (fun() ->
   print_endline "RUNNING EVALUATOR TESTS";
   basic_assignment_tests();
@@ -397,5 +441,6 @@ let test_evaluator = (fun() ->
   simple_loop_tests();
   simple_function_tests();
   complex_function_tests();
+  error_handling_tests();
   print_endline "";
   )

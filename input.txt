@@ -97,23 +97,29 @@ i -> increment(i);
 
 
 #Error testing (parser)
-schlormp x -> 10; #invalid type schlormp
-schlormp list x -> [1,2,3]; ##invalid type schlormp list
-bool x -> true && ; #idk what the error is, but clearly there's a problem
-bool x -> true && false #missing ;
-bool list x -> [true, false; #missing ]
-if true { print "hi"; #missing }
-string x -> ~; #invalid literal ~
-func f(schlormp x) { #invalid parameter type
-    print "hi";
-};
-func f(int x { #expected )
-    print "hi";
-};
+# schlormp x -> 10; #invalid type schlormp
+# schlormp list x -> [1,2,3]; ##invalid type schlormp list
+# bool x -> true && ; #idk what the error is, but clearly there's a problem
+# bool x -> true && false #missing ;
+# bool list x -> [true, false; #missing ]
+# if true { print "hi"; #missing }
+# string x -> ~; #invalid literal ~
+# func f(schlormp x) { #invalid parameter type
+#     print "hi";
+# };
+# func f(int x { #expected )
+#     print "hi";
+# };
 
 #Error testing (evaluator)
-z -> 5; #Error, z not found
-z(); #Error z not found (func)
-
+# z -> 5; #Error, z not found
+# z(); #Error z not found (func)
+# int z -> "hello"; #Error, type mismatch
+# int z -> true && 1; #Error, type mismatch bop
+# int list z -> []; z -> ["a","b","c"]; #Error, type mismatch list
+# int list z -> [1,2,3]; int c -> z["a"]; #Error, type mismatch index
+# increment("number"); #Error, type mismatch between def/call
+# int list z1 -> []; string list z2 -> []; z1 -> z1 + z2; #can't append lists of different types
+# int list z -> [1,2,3]; z(); #can't call non-function
 
 
