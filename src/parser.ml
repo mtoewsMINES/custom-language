@@ -8,8 +8,9 @@ let rec parse_prog_helper (tok: string list) (stmt_list: stmt list) : (Util.stmt
     (match remtok with 
     | ";"::"}"::[] -> (List.rev (stmt::stmt_list), [])
     | ";"::"}"::d -> (List.rev (stmt::stmt_list), d)
-    | ";"::d -> parse_prog_helper d (stmt::stmt_list)
-    | _ -> failwith "Expected ';}'")
+    | ";"::[] -> failwith "Expected }"
+    | ";"::d -> print_list d; parse_prog_helper d (stmt::stmt_list)
+    | _ -> failwith "Expected ;")
   | "}"::d -> (List.rev stmt_list, d)
   | _ ->
     let (stmt, remtok) = parse_stmt tok in
@@ -174,7 +175,7 @@ and parse_literal (tok: string list) : (Util.exp * string list) =
     (match x.[0] with 
     | 'a'..'z' | 'A'..'Z' -> (VarExp(x), d)
     | '0'..'9' -> (ValExp(Int (int_of_string x)), d)
-    | _ -> failwith ("Invalid Literal: " ^ x))
+    | _ -> failwith ("Invalid literal: " ^ x))
   | [] -> failwith "Empty literal"
 and parse_list (tok: string list) (acc: exp list): (exp list * string list) = 
   let (lit, remtok) = parse_exp tok in 
@@ -345,6 +346,29 @@ let complex_function_tests = (fun() ->
     ])));
   )
 
+let error_handling_tests = (fun() -> 
+  print_endline "--running error_handling_tests--";
+
+  ignore(run_test "Invalid type def" (parse_prog) ["schlormp";"x";"->";"10";";"]
+    (Error "Invalid type schlormp"));
+  ignore(run_test "Invalid list type def" (parse_prog) ["schlormp";"list";"x";"->";"[";"1";",";"2";",";"3";"]";";"]
+    (Error "Invalid type: schlormp list"));
+  ignore(run_test "Missing half of bopexp" (parse_prog) ["bool";"x";"->";"true";"&&";";"]
+    (Error "Invalid literal: ;"));
+  ignore(run_test "Missing ;" (parse_prog) ["bool";"x";"->";"true";"&&";"false"]
+    (Error "Expected ';'"));
+  ignore(run_test "Missing literal list" (parse_prog) ["bool";"list";"x";"->";"[";"true";",";"false";",";"]";";"]
+    (Error "Invalid literal: ]"));
+  ignore(run_test "Missing }" (parse_prog) ["if";"true";"{";"print";"\"";"hi";"\"";";"]
+    (Error "Expected }"));
+  ignore(run_test "Invalid literal ~" (parse_prog) ["string";"x";"->";"~";";"]
+    (Error "Invalid literal: ~"));
+  ignore(run_test "Invalid parameter type" (parse_prog) ["func";"f";"(";"schlormp";"x";")";"{";"print";"\"";"hi";"\"";";";"}";";"]
+    (Error "Invalid parameter type schlormp"));
+  ignore(run_test "Missing )" (parse_prog) ["func";"f";"(";"int";"x";"{";"print";"\"";"hi";"\"";";";"}";";"]
+    (Error "Invalid parameter assignment (def)"))
+  )
+
 let test_parser = (fun () ->
     print_endline "RUNNING PARSER TESTS";
     basic_assignment_tests();
@@ -355,5 +379,6 @@ let test_parser = (fun () ->
     simple_loop_tests();
     simple_function_tests();
     complex_function_tests();
+    error_handling_tests();
     print_endline ""
   )

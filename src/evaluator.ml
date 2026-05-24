@@ -387,11 +387,6 @@ let complex_function_tests = (fun() ->
   
   )
 
-  (* let preset_env3 = StringMap.add "increment" (Closure([TypeDef(Ptype IntType, "n")], [
-  ReturnStmt(BopExp(VarExp "n", Add, ValExp(Int 1)))
-  ])) StringMap.empty in
-  let preset_env3 = StringMap.add "i" (Int 1) preset_env3 in *)
-
 let test_evaluator = (fun() ->
   print_endline "RUNNING EVALUATOR TESTS";
   basic_assignment_tests();
