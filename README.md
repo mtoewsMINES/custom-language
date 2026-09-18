@@ -1,7 +1,7 @@
 **Overview**\
 This is a recursive descent parser built to interpret and evaluate programs written in a language defined by the following custom grammar:
 
-'''
+```
 <prog> -> 
     | <stmt> <prog>
     | "{" <prog> "}"
@@ -58,4 +58,4 @@ This is a recursive descent parser built to interpret and evaluate programs writ
 <ptype> -> "int" <adt> | "string" <adt> | "bool" <adt>
 <adt> -> "list" | ""
 <ident> -> alphanumeric characters
-'''
+```
